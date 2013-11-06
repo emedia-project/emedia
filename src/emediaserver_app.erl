@@ -49,6 +49,10 @@ custom_404_hook(404, Headers, <<>>, Req) ->
   {Path, _} = cowboy_req:path(Req),
   {Method, _} = cowboy_req:method(Req),
   lager:error("************** 404 [~p ~p] *****************", [Method, Path]),
+  case cowboy_req:body(Req) of
+    {ok, Data, _Req2} -> lager:error("~p", [Data]);
+    {error, _Reason} -> lager:error("No body!")
+  end,
   Body = <<"404 Not Found.">>,
   Headers2 = lists:keyreplace(<<"content-length">>, 1, Headers,
     {<<"content-length">>, integer_to_list(byte_size(Body))}),

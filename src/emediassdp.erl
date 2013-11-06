@@ -10,7 +10,7 @@
 
 start() ->
   lager:info("emediassdp started"),
-  {_S,_Pid}=udp_mcast:start({239,255,255,250},1900,?MODULE).
+  udp_mcast:start({239,255,255,250},1900,?MODULE).
 
 receiver() ->
   receive

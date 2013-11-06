@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# demonize : http://stackoverflow.com/questions/6830806/running-erlang-shell-as-a-deamon-service
+
 OPTS=$*
 
 NOSHELL="-noshell"
@@ -25,6 +27,6 @@ if [ $COMPILE = true ] ; then
   ./rebar compile
 fi
 
-#MNESIA=-mnesia dir '"DEBServer.mnesia"'
+#MNESIA=-mnesia dir '"eMedia.mnesia"'
 
 erl -pa ebin deps/*/ebin $NOSHELL $MNESIA -s emediaserver
