@@ -37,6 +37,7 @@ routes() ->
         {"/", emediaserver_root_handler, []},
         {"/description", emediaserver_description_handler, []},
         {"/service/content_directory", emediaserver_content_directory_handler, []},
+        {"/service/content_directory/control", emediaserver_content_directory_control_handler, []},
         {"/service/connection_manager", emediaserver_connection_manager_handler, []},
         {"/static/[...]", cowboy_static, [
             {directory, {priv_dir, emediaserver, ["static"]}},

@@ -8,8 +8,6 @@
 -export([start/0]).
 -export([terminate_scan/0]).
 
--define(FFPROB_OPTIONS, "-v quiet -print_format json -show_format -show_streams").
-
 % wrappers
 start() -> 
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -60,11 +58,12 @@ p_terminate_scan(MediaScanner) ->
   MediaScanner1.
 
 run_scan() ->
-  lager:info("*********************** Scanning...1"),
-  timer:sleep(5000),
-  lager:info("*********************** Scanning...2"),
-  timer:sleep(5000),
-  lager:info("*********************** Scanning...3"),
-  timer:sleep(5000),
-  lager:info("*********************** Scanning...done"),
+  lists:foreach(fun(MediaType) ->
+      MediaDirectories = eme_config:get(medias, MediaType),
+      lists:foldl(fun(Directory, MediaType1) ->
+        media_content:scan(MediaType1, Directory),
+        MediaType1
+      end, MediaType, MediaDirectories),
+      ok
+    end, ["A", "V", "P"]),
   media_scanner:terminate_scan().

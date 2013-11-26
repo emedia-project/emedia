@@ -65,7 +65,7 @@ handle_call(_Message, _From, Config) ->
 % private
 
 get_medias_type(Medias, Type) ->
-  {_, MediaList} = list:foldl(fun(Media, {Type1, Acc}) ->
+  {_, MediaList} = lists:foldl(fun(Media, {Type1, Acc}) ->
       case re:split(Media, "\s*,\s*", [{return, list}]) of
         [Type1|Path] ->
           Path1 = string:join(Path, ","),
