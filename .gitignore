@@ -3,4 +3,6 @@ deps
 ebin
 log
 *.beam
+*.mnesia
+*.txt*
 erl_crash.dump
