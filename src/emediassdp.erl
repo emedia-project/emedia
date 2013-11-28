@@ -39,16 +39,24 @@ is_msearch(Packet) ->
   eme_utils:starts_with(Packet, ?M_SEARCH).
 
 handle_msearch(Socket, IP, InPortNo, Packet) ->
-  ST = get_st(Packet),
-  case rootdevice:get_service(ST) of
-    {ok, Service} -> send_msearch_response(Socket, IP, InPortNo, Packet, ST, Service);
-    {error, _Reason} -> lager:error("Unknow service type ~p", [ST])
+  case get_st(Packet) of
+    {service, ST} ->
+      case rootdevice:get_service(ST) of
+        {ok, Service} -> send_msearch_response(Socket, IP, InPortNo, Packet, ST, Service);
+        {error, _Reason} -> lager:error("Unknow service type ~p", [ST])
+      end;
+    noservice ->
+      lager:error("No service found")
   end,
   true.
 
 get_st(Message) ->
-  [ST] = [string:strip(string:sub_string(X, 4)) || X <- string:tokens(Message, "\r\n"), eme_utils:starts_with(X, "ST")],
-  ST.
+  lager:error("get_st : Message = ~p", [Message]),
+  LST = [string:strip(string:sub_string(X, 4)) || X <- string:tokens(Message, "\r\n"), eme_utils:starts_with(X, "ST")],
+  case length(LST) of
+    1 -> [ST] = LST, {service, ST};
+    _ -> noservice
+  end.
 
 send_msearch_response(Socket, IP, InPortNo, _Packet, ST, Service) ->
   Message = emediassdp_message:build_msearch_response(ST, Service:get_uri(), Service:get_service_type()),
