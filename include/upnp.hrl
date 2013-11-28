@@ -36,7 +36,9 @@
     medias = [],
     scan_interval = 300000,
     tmdb_api_key = false,
-    ffprobe_path = "ffprobe"
+    ffprobe_path = "ffprobe",
+    ffmpeg_path = "ffmpeg",
+    db_path = "."
   }).
 
 %% Record for the media scanner

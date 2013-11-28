@@ -27,8 +27,12 @@ get(services) ->
   gen_server:call(?MODULE, {get_services});
 get(ffprobe_path) ->
   gen_server:call(?MODULE, {get_ffprobe_path});
+get(ffmpeg_path) ->
+  gen_server:call(?MODULE, {get_ffmpeg_path});
 get(scan_interval) ->
-  gen_server:call(?MODULE, {get_scan_interval}).
+  gen_server:call(?MODULE, {get_scan_interval});
+get(db_path) ->
+  gen_server:call(?MODULE, {get_db_path}).
 -spec(get/2 :: (medias, string()) -> [string()]).
 %% @doc Access a configuration information
 get(medias, Type) ->
@@ -69,9 +73,15 @@ handle_call({get_services}, _From, Config) ->
 handle_call({get_ffprobe_path}, _From, Config) ->
   #emeconfig{ffprobe_path = FFProbePath} = Config,
   {reply, FFProbePath, Config};
+handle_call({get_ffmpeg_path}, _From, Config) ->
+  #emeconfig{ffmpeg_path = FFMpegPath} = Config,
+  {reply, FFMpegPath, Config};
 handle_call({get_scan_interval}, _From, Config) ->
   #emeconfig{scan_interval = ScanInterval} = Config,
   {reply, ScanInterval, Config};
+handle_call({get_db_path}, _From, Config) ->
+  #emeconfig{db_path = DBPath} = Config,
+  {reply, DBPath, Config};
 handle_call({get_medias, Type}, _From, Config) ->
   #emeconfig{medias = Medias} = Config,
   {reply, get_medias_type(Medias, Type), Config};
@@ -155,6 +165,10 @@ read_config_file(ConfFile, Config) ->
                     Acc#emeconfig{tmdb_api_key = Value2};
                   ffprobe_path ->
                     Acc#emeconfig{ffprobe_path = eme_utils:expand_path(Value2)};
+                  ffmpeg_path ->
+                    Acc#emeconfig{ffmpeg_path = eme_utils:expand_path(Value2)};
+                  db_path ->
+                    Acc#emeconfig{db_path = eme_utils:expand_path(Value2)};
                   Other ->
                     lager:info("Unknow option `~p' : ignored", [Other]),
                     Acc
