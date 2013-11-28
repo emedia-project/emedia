@@ -6,3 +6,5 @@ log
 *.mnesia
 *.txt*
 erl_crash.dump
+.eunit
+doc

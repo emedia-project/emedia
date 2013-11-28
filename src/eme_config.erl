@@ -1,3 +1,6 @@
+%% @author Gregoire Lejeune <gregoire.lejeune@free.fr>
+%% @copyright 2013 Gregoire Lejeune
+%% @doc This module allow you to acces the emedia configuration
 -module(eme_config).
 
 -behaviour(gen_server).
@@ -9,9 +12,13 @@
 -export([get/1, get/2]).
 
 % wrappers
+
+%% @doc Start the configuration server
 start() -> 
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
+%% @doc Access a configuration information
+-spec(get/1 :: (tcp_port | max_conn | services | ffprobe_path | scan_interval) -> any()).
 get(tcp_port) ->
   gen_server:call(?MODULE, {get_tcp_port});
 get(max_conn) ->
@@ -22,25 +29,34 @@ get(ffprobe_path) ->
   gen_server:call(?MODULE, {get_ffprobe_path});
 get(scan_interval) ->
   gen_server:call(?MODULE, {get_scan_interval}).
+-spec(get/2 :: (medias, string()) -> [string()]).
+%% @doc Access a configuration information
 get(medias, Type) ->
   gen_server:call(?MODULE, {get_medias, Type}).
 
 % Server
+
+%% @hidden
 init([]) ->
   {ok, read_config()}.
 
+%% @hidden
 terminate(_Reason, _Config) -> 
   ok.
 
+%% @hidden
 handle_cast(_Message, Config) -> 
   {noreply, Config}.
 
+%% @hidden
 handle_info(_Message, Config) -> 
   {noreply, Config}.
 
+%% @hidden
 code_change(_OldVersion, Config, _Extra) -> 
   {ok, Config}.
 
+%% @hidden
 handle_call({get_tcp_port}, _From, Config) ->
   #emeconfig{tcp_port = TcpPort} = Config,
   {reply, TcpPort, Config};

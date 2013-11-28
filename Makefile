@@ -14,8 +14,14 @@ tests: compile
 clean:
 	@$(REBAR) clean
 
-doc:
+gen-doc: clean-doc
+	@mkdir doc
+	@cp _doc/* doc
 	@$(REBAR) doc skip_deps=true
 
+clean-doc: doc
+	@rm -rf doc
+
 run: get-deps compile
-	erl -pa deps/*/ebin -pa ./ebin
+	erl -pa deps/*/ebin -pa ./ebin -mnesia dir '"eMediaTest.mnesia"'
+

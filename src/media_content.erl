@@ -49,7 +49,7 @@ update_media(File, MediaType, ScanTimestamp, FFProbe) ->
       {_RCod, FileInfo} = eme_utils:cmd(ScanCommand),
       {ok, FileMD5} = eme_utils:hash_file(File),
       FileSize = filelib:file_size(File),
-      Media = #media{
+      Media = #emedia_media{
         hash = FileMD5,
         type = MediaType,
         filename = filename:basename(File),
