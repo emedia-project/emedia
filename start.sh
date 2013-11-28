@@ -54,6 +54,6 @@ fi
 
 MNESIA="-mnesia dir '$DB_FILE'"
 
-echo erl +pc unicode -pa ebin deps/*/ebin $NOSHELL $MNESIA -s emediaserver
+#echo erl +pc unicode -pa ebin deps/*/ebin $NOSHELL $MNESIA -s emediaserver
 erl +pc unicode -pa ebin deps/*/ebin $NOSHELL $MNESIA -s emediaserver
 #erl -pa ebin deps/*/ebin $NOSHELL $MNESIA -s emediaserver

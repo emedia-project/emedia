@@ -39,6 +39,7 @@ A configuration accept the following parameters :
 * `scan_interval` : time interval (in minutes) between every scan of the medias directories by the server
 * `tmdb_api_key` : API key used to access [The Movie Database](https://www.themoviedb.org/)
 * `ffprobe_path` : Path to `ffprobe`
+* `db_path` : Path to the eMedia database
 
 Example :
 
@@ -55,6 +56,7 @@ Example :
     tmdb_api_key = AbCdEfGhIjKlMnOpQrStUvWxYz
     
     ffprobe_path = /usr/local/bin/ffprobe
+    db_path = /usr/share/emedia
 
 ## Licences
 
