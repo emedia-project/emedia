@@ -11,10 +11,14 @@
     add_item/3,
 
     search_item_by_id/1,
-    item_childs/1,
+    get_item_childs/1,
     count_item_childs/1,
 
-    add_items_link/2
+    add_items_link/2,
+
+    media_exist/1,
+
+    insert/1
   ]).
 
 create_schema(Nodes) ->
@@ -78,7 +82,7 @@ search_item_by_id(ID) ->
         X#emedia_item.id =:= ID
       ]))).
 
-item_childs(#emedia_item{id = ItemID}) ->
+get_item_childs(#emedia_item{id = ItemID}) ->
   Childs = do(qlc:q([X || X <- mnesia:table(emedia_item_item),
         X#emedia_item_item.parent_id =:= ItemID
       ])),
@@ -100,11 +104,19 @@ add_items_link(#emedia_item{id = ParentItemID}, #emedia_item{id = ChildItemID}) 
   },
   insert(ItemLink).
 
-% Private
+media_exist(#emedia_media{hash = Hash, filename = Filename}) ->
+  M = #emedia_media{hash = Hash, filename = Filename, _ = '_'},
+  F = fun() -> 
+      mnesia:select(emedia_media, [{M, [], ['$_']}])
+  end,
+  length(mnesia:activity(transaction, F)) > 0.
 
 insert(Data) ->
   F = fun() -> mnesia:write(Data) end,
   mnesia:transaction(F).
+
+% Private
+
 
 do(Q) ->
   F = fun() -> qlc:e(Q) end,

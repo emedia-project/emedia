@@ -46,10 +46,11 @@ update_media(File, MediaType, ScanTimestamp, FFProbe) ->
         utf8 -> FFProbe ++ " " ++ ?FFPROBE_OPTIONS ++ " \"" ++ File ++ "\"";
         _ -> FFProbe ++ " " ++ ?FFPROBE_OPTIONS ++ " \"" ++ ucp:to_utf8(File) ++ "\""
       end,
-      {_RCod, FileInfo} = eme_utils:cmd(ScanCommand),
+      {_RCod, _FileInfo} = eme_utils:cmd(ScanCommand), % TODO
       {ok, FileMD5} = eme_utils:hash_file(File),
       FileSize = filelib:file_size(File),
       Media = #emedia_media{
+        item_id = binary_to_list(uuid:generate()),
         hash = FileMD5,
         type = MediaType,
         filename = filename:basename(File),
@@ -62,7 +63,14 @@ update_media(File, MediaType, ScanTimestamp, FFProbe) ->
         height = 0,
         last_scan = ScanTimestamp
       },
-      lager:info("~p ~ts", [Media, FileInfo]),
+      case media_db:media_exist(Media) of
+        true ->
+          % TODO : Update ?
+          lager:info("EXIST : ~p", [Media]);
+        false ->
+          media_db:insert(Media),
+          lager:info("NOTEXIST : ~p", [Media])
+      end,
       ok
   end.
 

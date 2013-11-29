@@ -38,7 +38,7 @@ handle(Req, State) ->
               [?record_to_tuplelist(emedia_item, X) ++ [
                   {child_count, media_db:count_item_childs(X)}, 
                   {parent_id, ObjectID}] 
-                || X <- media_db:item_childs(Item)]
+                || X <- media_db:get_item_childs(Item)]
             }, 
             {number_returned, N}, 
             {total_matches, N}, 
