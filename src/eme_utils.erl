@@ -11,7 +11,8 @@
     timestamp/0,
     cmd/1,
     file_ext/1,
-    join/2
+    sub/3,
+    gsub/3
   ]).
 
 %-define(BLOCKSIZE, 32768).
@@ -131,5 +132,24 @@ file_ext(File) ->
   [_|ExtWithoutDot] = string:to_lower(filename:extension(File)),
   ExtWithoutDot.
 
-join([First|Rest],JoinWith) -> 
-  lists:flatten( [First] ++ [ JoinWith ++ X || X <- Rest] ).
+sub(Str,Old,New) ->
+  Lstr = length(Str),
+  Lold = length(Old),
+  Pos  = string:str(Str,Old),
+  if 
+    Pos =:= 0 -> 
+      Str;
+    true      ->
+      LeftPart = string:left(Str,Pos-1),
+      RitePart = string:right(Str,Lstr-Lold-Pos+1),
+      string:concat(string:concat(LeftPart,New),RitePart)
+  end.
+
+gsub(Str,Old,New) ->
+  Acc = sub(Str,Old,New),
+  subst(Acc,Old,New,Str).
+
+subst(Str,_Old,_New, Str) -> Str;
+subst(Acc, Old, New,_Str) ->
+  Acc1 = sub(Acc,Old,New),
+  subst(Acc1,Old,New,Acc).

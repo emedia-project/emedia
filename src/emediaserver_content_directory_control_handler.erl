@@ -19,6 +19,7 @@ handle(Req, State) ->
     {error, _Reason} -> 
       {error, "Invalid request: missing data"}
   end,
+  lager:info("RequestRecord = ~p", [RequestRecord]),
   Body1 = case RequestRecord of 
     #browse{ 
       object_id = ObjectID,
@@ -44,12 +45,13 @@ handle(Req, State) ->
             {total_matches, N}, 
             {update_id, Sec*MSec}]
         end,
+      lager:info("Browse result = ~p", [TplData]),
       {ok, Body} = browse_direct_children_dtl:render(TplData),
       Body;
     {error, Message} -> 
       {ok, ErrBody} = soap_error_dtl:render([
-          {soap_error_code, "SOAP-ENV:Server"},
-          {soap_error_message, Message}
+          {upnp_error_code, 402},
+          {upnp_error_message, Message}
         ]),
       ErrBody
   end,

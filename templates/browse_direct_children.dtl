@@ -6,10 +6,10 @@
         &lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
         &lt;DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/" xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"&gt;
         {% for entry in entries %}
-          &lt;container id="{{ entry.id }}" parentID="{{ entry.parent_id }}" restricted="1" childCount="{{ entry.child_count }}" searchable="0"&gt;
+          &lt;{{ entry.type }} id="{{ entry.id }}" parentID="{{ entry.parent_id }}" restricted="1" childCount="{{ entry.child_count }}" searchable="0"&gt;
             &lt;dc:title&gt;{{ entry.title }}&lt;/dc:title&gt;
             &lt;upnp:class&gt;{{ entry.class }}&lt;/upnp:class&gt;
-          &lt;/container&gt;
+          &lt;/{{ entry.type }}&gt;
         {% endfor %}
         &lt;/DIDL-Lite&gt;
       </Result>

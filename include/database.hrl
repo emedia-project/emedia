@@ -1,7 +1,8 @@
 -record(emedia_item, {
     id,
     title,
-    class = "object.container"
+    class = "object.container",
+    type = "container"
   }).
 
 -record(emedia_item_item, {
@@ -11,6 +12,7 @@
   }).
 
 -record(emedia_media, {
+    id,
     item_id,
     hash,
     type,

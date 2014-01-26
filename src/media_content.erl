@@ -29,14 +29,14 @@ do_scan(MediaType, Directory) ->
   lists:foldl(fun(File, MediaType1) ->
       case file:read_file_info(File) of
         {ok, _} -> 
-          update_media(File, MediaType1, ScanTimestamp, FFProbe1);
+          update_media(Directory, File, MediaType1, ScanTimestamp, FFProbe1);
         {error, Reason} -> 
           lager:info("~s : ~ts", [Reason, File])
       end,
       MediaType1
     end, MediaType, directory_content(Directory)).
 
-update_media(File, MediaType, ScanTimestamp, FFProbe) ->
+update_media(Directory, File, MediaType, ScanTimestamp, FFProbe) ->
   case mimetype_for_file_and_type(File, MediaType) of
     undefined -> 
       lager:info("Ignore file ~ts, not type ~s", [File, MediaType]),
@@ -50,7 +50,7 @@ update_media(File, MediaType, ScanTimestamp, FFProbe) ->
       {ok, FileMD5} = eme_utils:hash_file(File),
       FileSize = filelib:file_size(File),
       Media = #emedia_media{
-        item_id = binary_to_list(uuid:generate()),
+        id = binary_to_list(uuid:generate()),
         hash = FileMD5,
         type = MediaType,
         filename = filename:basename(File),
@@ -68,8 +68,16 @@ update_media(File, MediaType, ScanTimestamp, FFProbe) ->
           % TODO : Update ?
           lager:info("EXIST : ~p", [Media]);
         false ->
-          media_db:insert(Media),
-          lager:info("NOTEXIST : ~p", [Media])
+          lager:info("NOTEXIST : ~p", [Media]),
+          ParentContainerItemID = organize(Directory, MediaType, Media),
+          #emedia_item{id = ItemID} = case MediaType of
+            "V" -> media_db:add_item(filename:basename(File), "object.item.videoItem");
+            "A" -> media_db:add_item(filename:basename(File), "object.item.audioItem");
+            "P" -> media_db:add_item(filename:basename(File), "object.item.imageItem");
+            _ -> throw(wrong_media_type)
+          end,
+          media_db:add_items_link_by_ids(ParentContainerItemID, ItemID),
+          media_db:insert(Media#emedia_media{item_id = ItemID})
       end,
       ok
   end.
@@ -101,3 +109,24 @@ get_mimetype("P", MimeType) ->
 get_mimetype(_, _) ->
   undefined.
 
+organize(Directory, MediaType, #emedia_media{filename = File, fullpath = Path}) ->
+  Path1 = eme_utils:sub(Path, Directory, ""),
+  Path2 = eme_utils:sub(Path1, File, ""),
+  Path3 = [X || X <- filename:split(Path2), X =/= "/"],
+  get_container_id(MediaType, Path3).
+
+get_container_id(ParentID, []) ->
+  ParentID;
+get_container_id(ParentID, [Container|Rest]) ->
+  Child = [X || #emedia_item{title = Title} = X <- media_db:get_item_childs_by_id(ParentID),
+    Title =:= Container
+  ], 
+  case Child of
+    [#emedia_item{id = ID}] -> 
+      get_container_id(ID, Rest);
+    [] -> 
+      #emedia_item{id = ID} = media_db:add_item(Container, "object.container"),
+      media_db:add_items_link_by_ids(ParentID, ID),
+      get_container_id(ID, Rest);
+    _ -> throw(duplicated_node)
+  end.

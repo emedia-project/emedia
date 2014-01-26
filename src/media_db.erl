@@ -12,9 +12,11 @@
 
     search_item_by_id/1,
     get_item_childs/1,
+    get_item_childs_by_id/1,
     count_item_childs/1,
 
     add_items_link/2,
+    add_items_link_by_ids/2,
 
     media_exist/1,
 
@@ -69,10 +71,12 @@ add_item(Title, Class) ->
   add_item(binary_to_list(uuid:generate()), Title, Class).
 
 add_item(ID, Title, Class) ->
+  [_, Type|_] = string:tokens(Class, "."),
   Item = #emedia_item{
     id = ID,
     title = Title, 
-    class = Class
+    class = Class,
+    type = Type
   },
   insert(Item),
   Item.
@@ -83,6 +87,9 @@ search_item_by_id(ID) ->
       ]))).
 
 get_item_childs(#emedia_item{id = ItemID}) ->
+  get_item_childs_by_id(ItemID).
+
+get_item_childs_by_id(ItemID) ->
   Childs = do(qlc:q([X || X <- mnesia:table(emedia_item_item),
         X#emedia_item_item.parent_id =:= ItemID
       ])),
@@ -97,6 +104,9 @@ count_item_childs(#emedia_item{id = ItemID}) ->
       ]))).
 
 add_items_link(#emedia_item{id = ParentItemID}, #emedia_item{id = ChildItemID}) ->
+  add_items_link_by_ids(ParentItemID, ChildItemID).
+
+add_items_link_by_ids(ParentItemID, ChildItemID) ->
   ItemLink = #emedia_item_item{
     id = binary_to_list(uuid:generate()),
     parent_id = ParentItemID,
@@ -104,8 +114,8 @@ add_items_link(#emedia_item{id = ParentItemID}, #emedia_item{id = ChildItemID}) 
   },
   insert(ItemLink).
 
-media_exist(#emedia_media{hash = Hash, filename = Filename}) ->
-  M = #emedia_media{hash = Hash, filename = Filename, _ = '_'},
+media_exist(#emedia_media{hash = Hash, fullpath = Fullpath}) ->
+  M = #emedia_media{hash = Hash, fullpath = Fullpath, _ = '_'},
   F = fun() -> 
       mnesia:select(emedia_media, [{M, [], ['$_']}])
   end,
@@ -116,7 +126,6 @@ insert(Data) ->
   mnesia:transaction(F).
 
 % Private
-
 
 do(Q) ->
   F = fun() -> qlc:e(Q) end,

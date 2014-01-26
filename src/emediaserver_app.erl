@@ -5,8 +5,6 @@
 %% Application callbacks
 -export([start/2, stop/1]).
 
--define(C_ACCEPTORS, 100).
-
 %% ===================================================================
 %% Application callbacks
 %% ===================================================================
@@ -22,7 +20,7 @@ start(_StartType, _StartArgs) ->
     {onresponse, fun custom_404_hook/4}
   ],
   {ok, _}     = cowboy:start_http(http, eme_config:get(max_conn), TransOpts, ProtoOpts),
-  lager:info("emediaserver started on port ~p", [Port]),
+  lager:info("emediaserver started on port ~p (~p)", [Port, code:priv_dir(emediaserver)]),
   emediaserver_sup:start_link().
 
 stop(_State) ->

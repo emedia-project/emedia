@@ -16,12 +16,12 @@ parse_request(Data) ->
         case Event of 
           {startElement, _Uri, LocalName, _Prefix, _Attributes} -> 
             Path1 = Path ++ [LocalName],
-            {Request1, Record1} = case eme_utils:join(Path1, "/") of
+            {Request1, Record1} = case string:join(Path1, "/") of
               "Envelope/Body/Browse" -> {browse, #browse{}};
               _ -> {Request, Record}
             end,
             Envelope1 = case Envelope of
-              false -> case eme_utils:join(Path1, "/") of
+              false -> case string:join(Path1, "/") of
                   "Envelope/Body" -> true;
                   _ -> false
                 end;
@@ -40,7 +40,7 @@ parse_request(Data) ->
             Characteres1 = string:strip(Characteres),
             Record1 = case Request of
               browse ->
-                case eme_utils:join(Path, "/") of
+                case string:join(Path, "/") of
                   "Envelope/Body/Browse/ObjectID" -> Record#browse{object_id = Characteres1};
                   "Envelope/Body/Browse/BrowseFlag" -> Record#browse{flag = Characteres1};
                   "Envelope/Body/Browse/Filter" -> Record#browse{filter = Characteres1};

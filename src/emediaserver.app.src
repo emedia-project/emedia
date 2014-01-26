@@ -1,5 +1,4 @@
-{application, emediaserver,
-  [
+{application, emediaserver, [
     {description, "emediaserver"},
     {vsn, "1"},
     {modules, []},

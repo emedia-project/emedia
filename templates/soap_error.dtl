@@ -1,9 +1,32 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!--
+errorCode | errorDescription | Description
+==========|==================|====================================================
+401       | Invalid Action   | No action by that name at this service.
+402       | Invalid Args     | Could be any of the following: not enough in args,
+          |                  | too many in args, no in arg by that name,
+          |                  | one or more in args are of the wrong data type.
+403       | Out of Sync      | Out of synchronization.
+501       | Action Failed    | May be returned in current state of service
+          |                  | prevents invoking that action.
+600-699   | TBD              | Common action errors. Defined by UPnP Forum
+          |                  | Technical Committee.
+700-799   | TBD              | Action-specific errors for standard actions.
+          |                  | Defined by UPnP Forum working committee.
+800-899   | TBD              | Action-specific errors for non-standard actions.
+          |                  | Defined by UPnP vendor.
+-->
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
   <SOAP-ENV:Body>
     <SOAP-ENV:Fault>
-      <Faultcode>{{ soap_error_code }}</Faultcode>
-      <Faultstring>{{ soap_error_message }}</Faultstring>
+      <Faultcode>SOAP-ENV:Client</Faultcode>
+      <Faultstring>UPnPError</Faultstring>
+      <detail>
+        <UPnPError xmlns="urn:schemas-upnp-org:control-1-0">
+          <errorCode>{{ upnp_error_code }}</errorCode>
+          <errorDescription>{{ upnp_error_message }}</errorDescription>
+       </UPnPError>
+     </detail>
     </SOAP-ENV:Fault>
   </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
