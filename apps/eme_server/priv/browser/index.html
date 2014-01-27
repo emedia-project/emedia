@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" ng-app="emediaApp">
+  <head>
+    <meta charset="utf-8">
+    <title>eMedia</title>
+    <script src="/browser/js/lib/angular.min.js"></script>
+    <script src="/browser/js/lib/angular-route.min.js"></script>
+    <script src="/browser/js/lib/ui-bootstrap-tpls-0.10.0.min.js"></script>
+    <script src="/browser/js/app/app.js"></script>
+    <script src="/browser/js/app/controllers.js"></script>
+
+    <link href="/browser/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/browser/css/bootstrap-theme.min.css" rel="stylesheet"/>
+    <link href="/browser/css/emedia.css" rel="stylesheet"/>
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#/">eMedia</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li ng-class="{active: location.path() == '/audio'}"><a href="#/audio"><span class="glyphicon glyphicon-music"></span> Audio</a></li>
+            <li ng-class="{active: location.path() == '/photo'}"><a href="#/photo"><span class="glyphicon glyphicon-picture"></span> Photo</a></li>
+            <li ng-class="{active: location.path() == '/video'}"><a href="#/video"><span class="glyphicon glyphicon-film"></span> Video</a></li>
+            <li ng-class="{active: location.path() == '/help'}"><a href="#/help"><span class="glyphicon glyphicon-question-sign"></span> Help</a></li>
+            <li><a href="" ng-click="about()"><span class="glyphicon glyphicon-info-sign"></span> About</a></li>
+          </ul>
+          <form class="navbar-form navbar-right" role="form">
+            <div class="form-group">
+              <input type="text" placeholder="search" class="form-control">
+            </div>
+            <!-- <button type="submit" class="btn btn-success">Search</button> -->
+          </form>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="jumbotron">
+      <div class="container">
+        {{ location.path() }}
+      </div>
+    </div>
+
+    <div class="container">
+      <div ng-view></div>
+    </div>
+
+    <div class="footer">
+      <div class="container">
+        <p>
+        <a href="https://github.com/glejeune/emedia">eMedia</a>, &copy; Grégoire Lejeune 2013
+        - icons by <a href="http://ipapun.deviantart.com">Subrat Nayak</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

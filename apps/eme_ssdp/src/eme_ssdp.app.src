@@ -1,0 +1,16 @@
+{application, eme_ssdp,
+ [
+  {description, "eMedia SSDP Server"},
+  {vsn, "1.0.0"},
+  {modules, [eme_ssdp_app, eme_ssdp_sup, eme_ssdp, ssdp, ssdp_message, udp_mcast]},
+  {registered, [eme_ssdp]},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  lager,
+                  mimetypes,
+                  eme_config
+                 ]},
+  {mod, { eme_ssdp_app, []}},
+  {env, []}
+ ]}.

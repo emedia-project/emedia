@@ -1,0 +1,16 @@
+{application, eme_db,
+ [
+  {description, "eBill configuration"},
+  {vsn, "1.0.0"},
+  {modules, [eme_db_app, eme_db_sup, eme_db]},
+  {registered, [eme_db]},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  lager,
+                  mimetypes,
+                  eme_config
+                 ]},
+  {mod, { eme_db_app, []}},
+  {env, []}
+ ]}.

@@ -1,6 +1,23 @@
 #!/bin/sh
 
-# demonize : http://stackoverflow.com/questions/6830806/running-erlang-shell-as-a-deamon-service
+EBIN="ebin apps/*/ebin deps/*/ebin"
+ETC="etc"
+
+help() {
+  MESSAGE=$1
+  if [ "x$MESSAGE" != "x" ] ; then
+    echo $MESSAGE
+  fi
+  echo "Usage : start.sh [options]"
+  echo ""
+  echo "Options :"
+  echo "  -d --daemon [start|stop|status]    : Daemonize"
+  echo "  -c --console                       : Run in console mode"
+  echo "  -C --compile                       : Compile code before run"
+  echo "  -K --clean                         : Clean and compile code before run"
+  echo "     --no-ssdp                       : Do not start the SSDP server"
+  echo "  -h --help                          : Display this message"
+}
 
 get_db_path() {
   config_file_array='config_file_'
@@ -27,33 +44,50 @@ fi
 
 DB_FILE=$(echo "$DB_PATH/eMedia.mnesia")
 
-OPTS=$*
-
 NOSHELL="-noshell"
 COMPILE=false
 CLEAN=false
+DAEMON=none
+NOSSDP="true"
 
-for OPT in ${OPTS} ; do
-  if [ "$OPT" = "-console" ] ; then
-    NOSHELL=""
-  fi
-  if [ "$OPT" = "-compile" ] ; then
-    COMPILE=true
-  fi
-  if [ "$OPT" = "-clean" ] ; then
-    CLEAN=true
-  fi
+while (( "$#" )); do
+  case $1 in
+    -c|--console)
+      NOSHELL="" ;;
+    -C|--compile)
+      COMPILE=true ;;
+    -k|--clean)
+      CLEAN=true ;;
+    -h|--help)
+      help ; exit 0 ;;
+    -d|--daemon)
+      shift ; NOSHELL="-noshell" ; DAEMON=$1 ;;
+    --no-ssdp)
+      NOSSDP="false" ;;
+    *)
+      help ; exit 0 ;;
+  esac
+  shift
 done
 
 if [ $CLEAN = true ] ; then
   ./rebar clean
 fi
 if [ $COMPILE = true ] ; then
+  ./rebar get-deps
   ./rebar compile
 fi
 
 MNESIA="-mnesia dir '$DB_FILE'"
 
-#echo erl +pc unicode -pa ebin deps/*/ebin $NOSHELL $MNESIA -s emediaserver
-erl +pc unicode -pa ebin deps/*/ebin $NOSHELL $MNESIA -s emediaserver
-#erl -pa ebin deps/*/ebin $NOSHELL $MNESIA -s emediaserver
+case $DAEMON in
+  none)
+    erl +pc unicode -pa $EBIN -config $ETC/emedia-app.config $NOSHELL $MNESIA -s emediaserver start $NOSSDP;;
+  start)
+    # http://mindeavor.com/blog/running-erlang-in-the-background-tutorial
+    echo "start with run_erl -daemon /var/run/... \"...\"" ;;
+  stop)
+    echo "stop" ;;
+  status)
+    echo "status" ;;
+esac

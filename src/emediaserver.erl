@@ -1,15 +1,21 @@
 -module(emediaserver).
 
--export([start/0]).
+-export([start/0, start/1]).
 
 start() ->
+  start([true]).
+
+start([StartSSDP]) ->
   {ok, _} = application:ensure_all_started(lager),
   ok = application:start(crypto),
   {ok, _} = application:ensure_all_started(cowboy),
-  {ok, _Pid} = eme_config:start(),
-  ok = application:start(emediaserver),
-  {_S, _Pid1} = emediassdp:start(),
-  {ok, _Pid2} = rootdevice:start(),
-  {ok, _Pid3} = mediaserver:start(),
-  media_db:start(),
-  {ok, _Pid4} = media_scanner:start().
+  ok = application:start(mimetypes),
+  ok = application:start(emedia),
+  ok = application:start(eme_config),
+  ok = application:start(eme_db),
+  ok = application:start(eme_scanner),
+  case StartSSDP of
+    true -> ok = application:start(eme_ssdp);
+    _ -> lager:info("ssdp not started!")
+  end,
+  ok = application:start(eme_server).

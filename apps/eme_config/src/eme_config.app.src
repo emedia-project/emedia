@@ -1,0 +1,14 @@
+{application, eme_config,
+ [
+  {description, "eBill configuration"},
+  {vsn, "1.0.0"},
+  {modules, [eme_config_app, eme_config_sup, eme_config]},
+  {registered, [eme_config]},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  lager
+                 ]},
+  {mod, { eme_config_app, []}},
+  {env, []}
+ ]}.
