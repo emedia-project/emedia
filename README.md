@@ -10,7 +10,9 @@ A simple UPNP mediaserver
 
     git clone https://github.com/glejeune/emedia.git
     cd emedia
-    ./start.sh -compile
+    ./start.sh --compile
+
+See `./start.sh --help` for more options.
 
 ## Configuration
 
