@@ -2,11 +2,11 @@ REBAR=$(shell which rebar || echo ./rebar)
 
 all: compile
 
-deps:
+get-deps:
 	@$(REBAR) get-deps
 	@$(REBAR) check-deps
 
-compile: deps
+compile: get-deps
 	@$(REBAR) compile
 
 tests: compile

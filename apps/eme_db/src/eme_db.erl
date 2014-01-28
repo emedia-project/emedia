@@ -73,7 +73,6 @@ init(Nodes) ->
   Create = create_schema(Nodes),
   case mnesia:wait_for_tables([emedia_item, emedia_item_item, emedia_media], 20000) of
     {timeout, RemainingTabs} ->
-      lager:info("-----------------------> Timeout!!!"),
       throw(RemainingTabs);
     ok ->
       ok
