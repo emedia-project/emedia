@@ -64,16 +64,13 @@ Example :
 
 ![](emedia.png)
 
-## Licences
+## Licence
 
-eMedia is available for use under the following license, commonly known
-as the 3-clause (or "modified") BSD license:
+eMedia is available for use under the following license, commonly known as the 3-clause (or "modified") BSD license:
 
-Copyright (c) 2013 Grégoire Lejeune <<gregoire.lejeune@free.fr>>
+Copyright (c) 2013, 2014 Grégoire Lejeune <<gregoire.lejeune@free.fr>>
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions
-are met:
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 
 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
