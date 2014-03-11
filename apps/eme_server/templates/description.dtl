@@ -9,7 +9,7 @@
     <dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMS-1.50</dlna:X_DLNADOC>
     <dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">M-DMS-1.50</dlna:X_DLNADOC>
     <deviceType>urn:schemas-upnp-org:device:MediaServer:1</deviceType>
-    <friendlyName>eMedia @ {{ hostname }}</friendlyName>
+    <friendlyName>eMedia ({{ version }}) @ {{ hostname }}</friendlyName>
     <manufacturer>Gregoire Lejeune</manufacturer>
     <manufacturerURL>http://blog.lejeun.es</manufacturerURL>
     <modelDescription>UPnP/AV 1.0 Compliant Media Server</modelDescription>
@@ -28,7 +28,7 @@
         <url>/static/emedia.png</url>
       </icon>
     </iconList>
-    <presentationURL>/</presentationURL> 
+    <presentationURL>{{ url_base }}/</presentationURL> 
     <serviceList>
       <service>
         <serviceType>urn:schemas-upnp-org:service:ContentDirectory:1</serviceType>

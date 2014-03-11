@@ -12,6 +12,9 @@
   ]).
 
 -record(emeconfig, {
+    hostname,
+    uuid,
+    tcp_ip,
     tcp_port = ?EMEDIASERVER_TCP_PORT,
     max_conn = ?EMEDIASERVER_MAX_CONN,
     services = ?EMEDIASERVER_SERVICES,

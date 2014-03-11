@@ -18,7 +18,13 @@ start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 %% @doc Access a configuration information
--spec(get/1 :: (tcp_port | max_conn | services | ffprobe_path | scan_interval) -> any()).
+-spec(get/1 :: (hostname | uuid | tcp_ip | tcp_port | max_conn | services | ffprobe_path | scan_interval) -> any()).
+get(hostname) ->
+  gen_server:call(?MODULE, {get_hostname});
+get(uuid) ->
+  gen_server:call(?MODULE, {get_uuid});
+get(tcp_ip) ->
+  gen_server:call(?MODULE, {get_tcp_ip});
 get(tcp_port) ->
   gen_server:call(?MODULE, {get_tcp_port});
 get(max_conn) ->
@@ -61,6 +67,15 @@ code_change(_OldVersion, Config, _Extra) ->
   {ok, Config}.
 
 %% @hidden
+handle_call({get_hostname}, _From, Config) ->
+  #emeconfig{hostname = Hostname} = Config,
+  {reply, Hostname, Config};
+handle_call({get_uuid}, _From, Config) ->
+  #emeconfig{uuid = UUID} = Config,
+  {reply, UUID, Config};
+handle_call({get_tcp_ip}, _From, Config) ->
+  #emeconfig{tcp_ip = TcpIP} = Config,
+  {reply, TcpIP, Config};
 handle_call({get_tcp_port}, _From, Config) ->
   #emeconfig{tcp_port = TcpPort} = Config,
   {reply, TcpPort, Config};
@@ -105,7 +120,12 @@ get_medias_type(Medias, Type) ->
 
 read_config() ->
   lager:info("Check configuration"),
-  find_config(?EMEDIACONFIG_PATH, #emeconfig{}).
+  {ok, Hostname} = inet:gethostname(),
+  find_config(?EMEDIACONFIG_PATH, #emeconfig{
+      tcp_ip = inet_parse:ntoa(get_active_ip()),
+      hostname = Hostname,
+      uuid = uuid:generate()
+    }).
 
 find_config([], Config) ->
   Config;
@@ -146,6 +166,8 @@ read_config_file(ConfFile, Config) ->
                   [Value4|_] -> Value4
                 end,
                 case list_to_atom(Key) of
+                  tcp_ip ->
+                    Acc#emeconfig{tcp_ip = Value2};
                   tcp_port ->
                     Acc#emeconfig{tcp_port = list_to_integer(Value2)};
                   max_conn ->
@@ -180,3 +202,33 @@ read_config_file(ConfFile, Config) ->
     end, Config, Lines),
   Config1.
 
+get_active_ip() ->
+  get_active_ip(get_iflist()).
+
+get_active_ip(If_list) ->
+  get_ip([A || A <- If_list, inet:ifget(A,[addr]) /= {ok,[{addr,{127,0,0,1}}]}, filter_networkcard(list_to_binary(A))]).
+
+get_iflist() ->
+  {ok, IfList} = inet:getiflist(),
+  IfList.
+
+filter_networkcard(<<"vnic", _R/binary>>) ->
+  false;
+filter_networkcard(<<"vmnet", _R/binary>>) ->
+  false;
+filter_networkcard(_) ->
+  true.
+
+get_ip([]) ->
+  get_loopback();
+get_ip([If]) ->
+  case inet:ifget(If, [addr]) of
+    {ok, []} -> get_loopback();
+    {_, [{_, Ip}]} -> Ip
+  end.
+
+get_loopback() ->
+  get_loopback(get_iflist()).
+
+get_loopback(If_list) ->
+  get_ip([A || A <- If_list, inet:ifget(A,[addr]) == {ok,[{addr,{127,0,0,1}}]}]).

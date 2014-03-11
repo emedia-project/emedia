@@ -8,10 +8,15 @@ init(_Transport, Req, []) ->
   {ok, Req, undefined}.
 
 handle(Req, State) ->
+  Version = case application:get_key(emedia, vsn) of
+    {ok, Vsn} -> list_to_binary(Vsn);
+    _ -> <<"unknow">>
+  end,
   {ok, Body} = description_dtl:render([
-      {url_base, "http://" ++ rootdevice:get_ip_port()},
-      {hostname, rootdevice:get_hostname()},
-      {udn, binary_to_list(rootdevice:get_uuid())}
+      {url_base, "http://" ++ eme_config:get(tcp_ip) ++ ":" ++ integer_to_list(eme_config:get(tcp_port))},
+      {hostname, eme_config:get(hostname)},
+      {udn, binary_to_list(eme_config:get(uuid))},
+      {version, Version}
   ]),
   Headers = [{<<"Content-Type">>, <<"text/xml; charset=utf-8">>}],
   {ok, Req2} = cowboy_req:reply(200, Headers, Body, Req),

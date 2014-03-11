@@ -33,17 +33,22 @@ handle(Req, State) ->
       Item = eme_db:search_item_by_id(ObjectID),
       TplData = case eme_db:count_item_childs(Item) of
         0 -> 
+          % TODO : use a correct UpdateID
           [{entries, []}, {number_returned, 0}, {total_matches, 0}, {update_id, Sec*MSec}];
         N -> 
           [{entries, 
               [?record_to_tuplelist(emedia_item, X) ++ [
                   {child_count, eme_db:count_item_childs(X)}, 
-                  {parent_id, ObjectID}] 
+                  {parent_id, ObjectID}
+                  ] ++ get_media_item(X)
                 || X <- eme_db:get_item_childs(Item)]
             }, 
             {number_returned, N}, 
             {total_matches, N}, 
-            {update_id, Sec*MSec}]
+            {update_id, Sec*MSec},
+            {server_ip, eme_config:get(tcp_ip)},
+            {server_port, eme_config:get(tcp_port)}
+          ]
         end,
       lager:info("Browse result = ~p", [TplData]),
       {ok, Body} = browse_direct_children_dtl:render(TplData),
@@ -61,3 +66,9 @@ handle(Req, State) ->
 
 terminate(_Reason, _Req, _State) ->
   ok.
+
+get_media_item(Item) ->
+  case eme_db:get_media_for_item(Item) of
+    X when X =:= undefined; X =:= error -> [];
+    M -> [{media, ?record_to_tuplelist(emedia_media, M)}]
+  end.

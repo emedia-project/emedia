@@ -2,7 +2,9 @@
 
 A simple UPNP mediaserver
 
-> This software is a WIP !!!
+> **This is a alpha version**. I plan evolutions that will involved major modifications in the database schema. So please **use this software for tests only**. The more you test, the more you report issues, the more we have chance to have something that's fit to your needs.
+>
+> Thanks in advance for your help.
 
 ## Install
 
@@ -24,6 +26,7 @@ You can add comments in a configuration file. A comment start with a `#`.
 
 A configuration accept the following parameters :
 
+* `tcp_ip` : IP binding
 * `tcp_port` : port used by the server
 * `max_conn` : maximum connections accepted by the server
 * `medias` : path to the differents media directories. This option must be repeated for every directory. The value is a path preceded by the type of media found in the directory (`A` for Audio, `V` for Video and `P` for Photo). Example :
@@ -44,6 +47,7 @@ A configuration accept the following parameters :
 
 Example :
 
+    tcp_ip = 120.0.0.1
     tcp_port = 9090
     max_conn = 50
     
@@ -63,6 +67,18 @@ Example :
 ## Architecture
 
 ![](emedia.png)
+
+## Plan
+
+* Rewrite `eme_db`
+* Add "update" to the media scanner (allowing to detect changes in the media database)
+* Support additional ressources
+* Add a web interface
+* Better media infos (using erlFFMpeg + emdbd) -> new media's classifications
+* Use erlFFMpeg for media conversion
+* Refactor SOAP support
+* Rewrite `eme_ssdp`
+* Rewrite `start.sh`
 
 ## Licence
 

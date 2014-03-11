@@ -64,7 +64,7 @@ handle_call({get_uuid}, _From, RootDevice) ->
   {reply, Uuid, RootDevice};
 handle_call({get_ip_port}, _From, RootDevice) ->
   #rootdevice{ip = Ip, port = Port} = RootDevice,
-  IpPort = inet_parse:ntoa(Ip) ++ ":" ++ integer_to_list(Port),
+  IpPort = Ip ++ ":" ++ integer_to_list(Port),
   {reply, IpPort, RootDevice};
 handle_call({get_os}, _From, RootDevice) ->
   #rootdevice{os = Os} = RootDevice,
@@ -84,44 +84,12 @@ get_service(Services, ST) ->
   end.
 
 root_device() ->
-  {ok, Hostname} = inet:gethostname(),
   #rootdevice{
-    uuid = uuid:generate(),
+    uuid = eme_config:get(uuid),
     os = ?UPNP,
-    ip = get_active_ip(), 
-    hostname = Hostname,
+    ip = eme_config:get(tcp_ip),
+    hostname = eme_config:get(hostname),
     port = eme_config:get(tcp_port),
     services = eme_config:get(services)
   }.
 
-get_ip([]) ->
-  get_loopback();
-
-get_ip([If]) ->
-  case inet:ifget(If, [addr]) of
-    {ok, []} -> get_loopback();
-    {_, [{_, Ip}]} -> Ip
-  end.
-
-get_loopback() ->
-  get_loopback(get_iflist()).
-
-get_loopback(If_list) ->
-  get_ip([A || A <- If_list, inet:ifget(A,[addr]) == {ok,[{addr,{127,0,0,1}}]}]).
-
-get_active_ip() ->
-  get_active_ip(get_iflist()).
-
-get_active_ip(If_list) ->
-  get_ip([A || A <- If_list, inet:ifget(A,[addr]) /= {ok,[{addr,{127,0,0,1}}]}, filter_networkcard(list_to_binary(A))]).
-
-get_iflist() ->
-  {ok, IfList} = inet:getiflist(),
-  IfList.
-
-filter_networkcard(<<"vnic", _R/binary>>) ->
-  false;
-filter_networkcard(<<"vmnet", _R/binary>>) ->
-  false;
-filter_networkcard(_) ->
-  true.

@@ -37,6 +37,7 @@ routes() ->
         {"/service/content_directory", eme_server_content_directory_handler, []},
         {"/service/content_directory/control", eme_server_content_directory_control_handler, []},
         {"/service/connection_manager", eme_server_connection_manager_handler, []},
+        {"/media", eme_server_stream_media_handler, []},
         {"/static/[...]", cowboy_static, {priv_dir, eme_server, "static", [
             {mimetypes, cow_mimetypes, all}
         ]}},

@@ -6,29 +6,32 @@
 -include_lib("stdlib/include/qlc.hrl").
 
 -export([
-    start_link/0,
-    init/1,
-    handle_call/3, 
-    handle_cast/2, 
-    handle_info/2, 
-    terminate/2, 
-    code_change/3,
-    
-    add_item/2,
-    add_item/3,
+  start_link/0,
+  init/1,
+  handle_call/3, 
+  handle_cast/2, 
+  handle_info/2, 
+  terminate/2, 
+  code_change/3,
+  
+  add_item/2,
+  add_item/3,
 
-    search_item_by_id/1,
-    get_item_childs/1,
-    get_item_childs_by_id/1,
-    count_item_childs/1,
+  search_item_by_id/1,
+  get_item_childs/1,
+  get_item_childs_by_id/1,
+  count_item_childs/1,
 
-    add_items_link/2,
-    add_items_link_by_ids/2,
+  add_items_link/2,
+  add_items_link_by_ids/2,
 
-    media_exist/1,
+  search_media_by_id/1,
+  media_exist/1,
+  get_media_for_item/1,
+  item_has_media/1,
 
-    insert/1
-  ]).
+  insert/1
+]).
 
 start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -59,8 +62,17 @@ add_items_link(#emedia_item{id = ParentItemID}, #emedia_item{id = ChildItemID}) 
 add_items_link_by_ids(ParentItemID, ChildItemID) ->
   gen_server:call(?MODULE, {add_items_link_by_ids, ParentItemID, ChildItemID}).
 
+search_media_by_id(ID) ->
+  gen_server:call(?MODULE, {search_media_by_id, ID}).
+
 media_exist(#emedia_media{hash = Hash, fullpath = Fullpath}) ->
   gen_server:call(?MODULE, {media_exist, Hash, Fullpath}).
+
+get_media_for_item(#emedia_item{id = ItemID}) ->
+  gen_server:call(?MODULE, {get_media_for_item, ItemID}).
+
+item_has_media(#emedia_item{id = ItemID}) ->
+  gen_server:call(?MODULE, {item_has_media, ItemID}).
 
 insert(Data) ->
   gen_server:call(?MODULE, {insert, Data}).
@@ -127,6 +139,8 @@ handle_call({count_item_childs, #emedia_item{id = ItemID}}, _From, Config) ->
   {reply, Result, Config};
 handle_call({add_items_link_by_ids, ParentItemID, ChildItemID}, _From, Config) ->
   {reply, do_add_items_link_by_ids(ParentItemID, ChildItemID), Config};
+handle_call({search_media_by_id, ID}, _From, Config) ->
+  {reply, do_search_media_by_id(ID), Config};
 handle_call({media_exist, Hash, Fullpath}, _From, Config) ->
   M = #emedia_media{hash = Hash, fullpath = Fullpath, _ = '_'},
   F = fun() -> 
@@ -134,6 +148,13 @@ handle_call({media_exist, Hash, Fullpath}, _From, Config) ->
   end,
   Result = length(mnesia:activity(transaction, F)) > 0,
   {reply, Result, Config};
+handle_call({get_media_for_item, ItemID}, _From, Config) ->
+  {reply, do_search_media_by_item_id(ItemID), Config};
+handle_call({item_has_media, ItemID}, _From, Config) ->
+  case do_search_media_by_item_id(ItemID) of
+    X when X =:= undefined; X =:= error -> {reply, false, Config};
+    _ -> {reply, true, Config}
+  end;
 handle_call({insert, Data}, _From, Config) ->
   {reply, do_insert(Data), Config};
 handle_call(_Message, _From, Config) ->
@@ -179,6 +200,16 @@ do_add_items_link_by_ids(ParentItemID, ChildItemID) ->
 do_search_item_by_id(ID) ->
   uniq(do(qlc:q([X || X <- mnesia:table(emedia_item),
         X#emedia_item.id =:= ID
+      ]))).
+
+do_search_media_by_item_id(ID) ->
+  uniq(do(qlc:q([X || X <- mnesia:table(emedia_media),
+        X#emedia_media.item_id =:= ID
+      ]))).
+
+do_search_media_by_id(ID) ->
+  uniq(do(qlc:q([X || X <- mnesia:table(emedia_media),
+        X#emedia_media.id =:= ID
       ]))).
 
 create_schema(Nodes) ->
