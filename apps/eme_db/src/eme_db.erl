@@ -91,7 +91,7 @@ init(Nodes) ->
   end,
   case Create of
     created ->
-      lager:info("insert initial items"),
+      lager:debug("insert initial items"),
       do_add_item("0", "eMedia Server", "object.container"),
       do_add_item("V", "Videos", "object.container"),
       do_add_items_link_by_ids("0", "V"),
@@ -217,7 +217,7 @@ create_schema(Nodes) ->
   mnesia:start(),
   case Schema of
     ok ->
-      lager:info("create emedia schema."),
+      lager:debug("create emedia schema."),
       mnesia:create_table(emedia_item,
         [{disc_copies, Nodes}, {attributes, record_info(fields, emedia_item)}]),
       mnesia:create_table(emedia_item_item,
@@ -226,10 +226,10 @@ create_schema(Nodes) ->
         [{disc_copies, Nodes}, {attributes, record_info(fields, emedia_media)}]),
       created;
     {error,{_,{already_exists,_}}} ->
-      lager:info("emedia schema already exist."),
+      lager:debug("emedia schema already exist."),
       complete;
     {error, Reason} ->
-      lager:error("Num... Something was wrong. ~p", [Reason]),
+      lager:error("[DB] Error : ~p", [Reason]),
       throw(Reason)
   end.
 

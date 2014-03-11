@@ -19,7 +19,6 @@ handle(Req, State) ->
     {error, _Reason} -> 
       {error, "Invalid request: missing data"}
   end,
-  lager:info("RequestRecord = ~p", [RequestRecord]),
   Body1 = case RequestRecord of 
     #browse{ 
       object_id = ObjectID,
@@ -50,7 +49,6 @@ handle(Req, State) ->
             {server_port, eme_config:get(tcp_port)}
           ]
         end,
-      lager:info("Browse result = ~p", [TplData]),
       {ok, Body} = browse_direct_children_dtl:render(TplData),
       Body;
     {error, Message} -> 

@@ -13,10 +13,10 @@ scan(MediaType, Directory) ->
   end,
   case file:read_file_info(Directory1) of
     {ok, _} -> 
-      lager:info("Scan [~s] ~ts", [MediaType, Directory1]),
+      lager:debug("Scan [~s] ~ts", [MediaType, Directory1]),
       do_scan(MediaType, Directory1);
     {error, Reason} -> 
-      lager:info("Can't scan [~s] ~ts : ~s", [MediaType, Directory1, Reason])
+      lager:debug("Can't scan [~s] ~ts : ~s", [MediaType, Directory1, Reason])
   end.
 
 do_scan(MediaType, Directory) ->
@@ -31,7 +31,7 @@ do_scan(MediaType, Directory) ->
         {ok, _} -> 
           update_media(Directory, File, MediaType1, ScanTimestamp, FFProbe1);
         {error, Reason} -> 
-          lager:info("~s : ~ts", [Reason, File])
+          lager:info("[SCAN] ~s : ~ts", [Reason, File])
       end,
       MediaType1
     end, MediaType, directory_content(Directory)).
@@ -39,7 +39,7 @@ do_scan(MediaType, Directory) ->
 update_media(Directory, File, MediaType, ScanTimestamp, _FFProbe) ->
   case mimetype_for_file_and_type(File, MediaType) of
     undefined -> 
-      lager:info("Ignore file ~ts, not type ~s", [File, MediaType]),
+      lager:debug("Ignore file ~ts, not type ~s", [File, MediaType]),
       ok;
     MimeType ->
       % ScanCommand = case ucp:detect(File) of
@@ -66,9 +66,9 @@ update_media(Directory, File, MediaType, ScanTimestamp, _FFProbe) ->
       case eme_db:media_exist(Media) of
         true ->
           % TODO : Update ?
-          lager:info("EXIST : ~p", [Media]);
+          lager:debug("EXIST : ~p", [Media]);
         false ->
-          lager:info("NOTEXIST : ~p", [Media]),
+          lager:debug("NOTEXIST : ~p", [Media]),
           ParentContainerItemID = organize(Directory, MediaType, Media),
           #emedia_item{id = ItemID} = case MediaType of
             "V" -> eme_db:add_item(filename:basename(File), "object.item.videoItem");
@@ -83,7 +83,7 @@ update_media(Directory, File, MediaType, ScanTimestamp, _FFProbe) ->
   end.
 
 directory_content(Directory) ->
-  lager:info("scan ~ts", [Directory]),
+  lager:debug("scan ~ts", [Directory]),
   filelib:fold_files(Directory, ".*", true, fun (FileOrDirPath, Acc) -> [FileOrDirPath|Acc] end, []).
 
 mimetype_for_file_and_type(File, MediaType) ->

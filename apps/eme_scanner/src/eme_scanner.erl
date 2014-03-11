@@ -45,13 +45,13 @@ handle_call(_Message, _From, MediaScanner) ->
 % Private
 
 p_start_scan(MediaScanner) ->
-  lager:info("Start scanning..."),
+  lager:debug("Start scanning..."),
   MediaScanner1 = MediaScanner#media_scanner{scanning = true},
   spawn_link(fun run_scan/0),
   MediaScanner1.
 
 p_terminate_scan(MediaScanner) ->
-  lager:info("Scan complete."),
+  lager:debug("Scan complete."),
   MediaScanner1 = MediaScanner#media_scanner{scanning = false},
   Interval = eme_config:get(scan_interval),
   erlang:send_after(Interval, self(), trigger),

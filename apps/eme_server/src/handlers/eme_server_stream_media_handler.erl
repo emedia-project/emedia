@@ -17,13 +17,10 @@ init(_Transport, _Req, _Table) ->
 
 rest_init(Req, _Table) ->
   {MediaID, _} = cowboy_req:qs_val(<<"id">>, Req),
-  lager:info("-------> MEDIAID = ~p", [MediaID]),
   M = eme_db:search_media_by_id(binary_to_list(MediaID)),
-  lager:info("MEDIA = ~p", [M]),
   #emedia_media{fullpath = Path, mimetype = Mimetype, size = Size} = M,
   [Type, SubType|_] = binary:split(Mimetype, <<"/">>),
   State = #media_file{path = Path, mimetype = {Type, SubType, '*'}, size = Size},
-  lager:info("SERVE MEDIA = ~p", [State]),
   {ok, Req, State}.
 
 content_types_provided(Req, #media_file{mimetype = Mimetype} = State) ->
