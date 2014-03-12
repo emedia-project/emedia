@@ -79,6 +79,7 @@ Example :
 * Refactor SOAP support
 * Rewrite `eme_ssdp`
 * Rewrite `start.sh`
+* Add DAAP support
 
 ## Licence
 
