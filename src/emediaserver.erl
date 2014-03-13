@@ -10,6 +10,8 @@ start([StartSSDP]) ->
   ok = application:start(crypto),
   {ok, _} = application:ensure_all_started(cowboy),
   ok = application:start(mimetypes),
+  ok = application:start(ffmpeg),
+  emdb:start(),
   ok = application:start(emedia),
   ok = application:start(eme_config),
   ok = application:start(eme_db),
