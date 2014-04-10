@@ -21,11 +21,9 @@ all(Request) ->
       starting_index = _StartIndex,
       requested_count = _Request_Count,
       sort_criteria = _SortCriteria
-    } = B ->
-      lager:info("---> B = ~p", [B]),
+    } ->
       {Sec, MSec, _} = now(),
       Item = eme_db:search_item_by_id(ObjectID),
-      lager:info("---> Item = ~p", [Item]),
       TplData = case eme_db:count_item_childs(Item) of
         0 -> 
           % TODO : use a correct UpdateID

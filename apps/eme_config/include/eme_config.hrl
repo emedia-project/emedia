@@ -1,27 +1,22 @@
 %% Record for configuration
 
 -define(EMEDIASERVER_TCP_PORT, 8080).
+-define(EMEDIASERVER_IP, "0.0.0.0").
 -define(EMEDIASERVER_MAX_CONN, 100).
+-define(EMEDIASERVER_SCAN_INTERVAL, 300).
 -define(EMEDIASERVER_SERVICES, [rootdevice, mediaserver]).
--define(EMEDIACONFIG_PATH, [
-    "/etc/emedia.conf", 
-    "/Library/Application Support/eMedia/emedia.conf", 
-    "~/Library/Application Support/eMedia/emedia.conf", 
-    "~/.emedia/emedia.conf", 
-    "emedia.conf"
-  ]).
 
 -record(emeconfig, {
     hostname,
     uuid,
     tcp_ip,
-    tcp_port = ?EMEDIASERVER_TCP_PORT,
-    max_conn = ?EMEDIASERVER_MAX_CONN,
-    services = ?EMEDIASERVER_SERVICES,
-    medias = [],
-    scan_interval = 300000,
-    tmdb_api_key = false,
-    ffprobe_path = "ffprobe",
-    ffmpeg_path = "ffmpeg",
-    db_path = "."
+    tcp_port,
+    max_conn,
+    services,
+    medias,
+    scan_interval,
+    tmdb_api_key,
+    ffprobe_path,
+    ffmpeg_path,
+    db_path
   }).

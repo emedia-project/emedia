@@ -121,86 +121,37 @@ get_medias_type(Medias, Type) ->
 read_config() ->
   lager:info("Check configuration"),
   {ok, Hostname} = inet:gethostname(),
-  find_config(?EMEDIACONFIG_PATH, #emeconfig{
-      tcp_ip = inet_parse:ntoa(get_active_ip()),
-      hostname = Hostname,
-      uuid = uuid:generate()
-    }).
-
-find_config([], Config) ->
-  Config;
-find_config([F|H], Config) ->
-  ConfFile = eme_utils:expand_path(F),
-  case filelib:is_file(ConfFile) of
-    true -> 
-      find_config(H, read_config_file(ConfFile, Config));
-    false -> 
-      find_config(H, Config)
-  end.
-
-read_config_file(ConfFile, Config) ->
-  lager:info("Update configuration with ~p", [ConfFile]),
-  IniBin = case file:read_file(ConfFile) of
-    {ok, IniBin0} ->
-      IniBin0;
-    {error, eacces} ->
-      throw({file_permission_error, ConfFile});
-    {error, enoent} ->
-      Fmt = "Couldn't find server configuration file ~s.",
-      Msg = list_to_binary(io_lib:format(Fmt, [ConfFile])),
-      throw({startup_error, Msg})
+  IP = case get_value(ip, ?EMEDIASERVER_IP) of
+    ?EMEDIASERVER_IP -> inet_parse:ntoa(get_active_ip());
+    Other -> Other
   end,
-  Lines = re:split(IniBin, "\r\n|\n|\r|\032", [{return, list}]),
-  Config1 = lists:foldl(fun(Line, Acc) ->
-        case string:strip(Line) of
-          "" -> 
-            Acc;
-          "#" ++ _Rest ->
-            Acc;
-          Rest ->
-            case re:split(Rest, "\s*=\s*", [{return, list}]) of
-              [Key|Value] ->
-                Value1 = string:join(Value, "="),
-                Value2 = case re:split(Value1, "\s*#", [{return, list}]) of
-                  [Value3] -> Value3;
-                  [Value4|_] -> Value4
-                end,
-                case list_to_atom(Key) of
-                  tcp_ip ->
-                    Acc#emeconfig{tcp_ip = Value2};
-                  tcp_port ->
-                    Acc#emeconfig{tcp_port = list_to_integer(Value2)};
-                  max_conn ->
-                    Acc#emeconfig{max_conn = list_to_integer(Value2)};
-                  medias ->
-                    #emeconfig{medias = Medias} = Acc,
-                    Acc#emeconfig{medias = Medias ++ [Value2]};
-                  scan_interval ->
-                    Time = list_to_integer(Value2) * 60000,
-                    if 
-                      (Value2 > 0) and (Time < 4294967295) -> 
-                        Acc#emeconfig{scan_interval = Time};
-                      true -> 
-                        Acc
-                    end;
-                  tmdb_api_key ->
-                    Acc#emeconfig{tmdb_api_key = Value2};
-                  ffprobe_path ->
-                    Acc#emeconfig{ffprobe_path = eme_utils:expand_path(Value2)};
-                  ffmpeg_path ->
-                    Acc#emeconfig{ffmpeg_path = eme_utils:expand_path(Value2)};
-                  db_path ->
-                    Acc#emeconfig{db_path = eme_utils:expand_path(Value2)};
-                  Other ->
-                    lager:info("Unknow option `~p' : ignored", [Other]),
-                    Acc
-                end;
-              _ ->
-                Acc
-            end
-        end
-    end, Config, Lines),
-  Config1.
+  Time = get_value(scan_interval, ?EMEDIASERVER_SCAN_INTERVAL) * 1000,
+  ScanInterval = if 
+    (Time > 0) and (Time < 4294967295) -> 
+      Time;
+    true -> 
+      ?EMEDIASERVER_SCAN_INTERVAL * 1000
+  end,
+  #emeconfig{
+    hostname = Hostname,
+    uuid = uuid:generate(),
+    tcp_ip = IP,
+    tcp_port = get_value(port, ?EMEDIASERVER_TCP_PORT),
+    max_conn = get_value(max_conn, ?EMEDIASERVER_MAX_CONN),
+    services = ?EMEDIASERVER_SERVICES,
+    medias = get_value(medias, []),
+    scan_interval = ScanInterval,
+    tmdb_api_key = get_value(tmdb_api_key, false),
+    ffprobe_path = eme_utils:expand_path(get_value(ffprobe_path, "ffprobe")),
+    ffmpeg_path = eme_utils:expand_path(get_value(ffmpeg_path, "ffmpeg")),
+    db_path = eme_utils:expand_path(get_value(db_path, "."))
+  }.
+
+get_value(Key, Default) ->
+  case application:get_env(emedia, Key) of
+    {ok, Value} -> Value;
+    _ -> Default
+  end.
 
 get_active_ip() ->
   get_active_ip(get_iflist()).
