@@ -18,11 +18,9 @@ See `./start.sh --help` for more options.
 
 ## Configuration
 
-You can update the configuration by creating a file named `emedia.conf` in `/etc`, `/Library/Application Support/eMedia/`, `~/Library/Application Support/eMedia`, `~/.emedia` and `.`. If many files exist, eMedia will read then in this order and update the configuration consequently.
+The configuration is store in the `config/emedia.config` file.
 
-> Be careful, the `media` parameter is cumulatif.
-
-You can add comments in a configuration file. A comment start with a `#`.
+You can add comments in a configuration file. A comment start with a `%`.
 
 A configuration accept the following parameters :
 
@@ -47,22 +45,40 @@ A configuration accept the following parameters :
 
 Example :
 
-    tcp_ip = 120.0.0.1
-    tcp_port = 9090
-    max_conn = 50
-    
-    # Medias
-    medias = V,/home/greg/videos
-    medias = V,/var/lib/emedia/video
-    medias = P,/home/greg/Photos
-    medias = A,/var/lib/emedia/audio
-    
-    scan_interval = 60
-    tmdb_api_key = AbCdEfGhIjKlMnOpQrStUvWxYz
-    
-    ffprobe_path = /usr/local/bin/ffprobe
-    ffmpeg_path = /usr/local/bin/ffmpeg
-    db_path = /usr/share/emedia
+```erlang
+{emedia, [
+  {port, 9090}, 
+  {ip, "0.0.0.0"},
+  {max_conn, 100},
+  {routes, [
+    {"/description", description},
+    {"/service/content_directory", service_content_directory},
+    {"/service/content_directory/control", service_content_directory_control},
+    {"/service/connection_manager", service_connection_manager},
+    {"/media", media}
+  ]},
+  {medias, [
+    "V,/home/user/videos",
+    "V,/usr/share/videos",
+    "P,/home/user/Photos",
+    "A,/home/user/music"
+  ]},
+  {scan_interval, 60},
+  {tmdb_api_key, "mY4p1k3y"},
+  {ffprobe_path, "/usr/local/bin/ffprobe"},
+  {ffmpeg_path, "/usr/local/bin/ffmpeg"},
+  {db_path, "~/.emedia"}
+]},
+{mimetypes, [
+  {load_async, true},
+  {load_timeout, 10000},
+  {load, [
+    {default, [
+      {<<"mkv">>, <<"video/x-matroska">>}
+    ]}
+  ]}
+]}
+```
 
 ## Architecture
 
