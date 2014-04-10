@@ -1,0 +1,149 @@
+#!/bin/sh
+
+OPTS=$*
+
+RUNNER_SCRIPT_DIR=$(cd ${0%/*} && pwd)
+NAME=`basename $0`
+PIDFILE=$RUNNER_SCRIPT_DIR"/."$NAME".pid"
+
+STARTED=false
+PID=""
+if [ -f $PIDFILE ] ; then 
+  STARTED=true
+  PID=`cat $PIDFILE | head -1`
+fi
+NOSHELL="-noshell -detached"
+DAEMON=true
+if [ "x$PARIS_RUN_MODE" = "x" ] ; then
+  export PARIS_RUN_MODE="production"
+else
+  export PARIS_RUN_MODE=$PARIS_RUN_MODE
+fi
+COMPILE=false
+CLEAN=false
+ACTION=""
+
+help() {
+  MESSAGE=$1
+  if [ "x$MESSAGE" != "x" ] ; then
+    echo $MESSAGE
+  fi
+  echo "Usage : start.sh [options] {start|stop|console|status}" 
+  echo ""
+  echo "Options :"
+  echo "  -d --development : Run in development mode"
+  echo "  -p --production  : Run in production mode"
+  echo "  -C --compile     : Compile code before run"
+  echo "  -K --clean       : Clean and compile code before run"
+  echo "  -h --help        : Display this message"
+}
+
+print_status() {
+  case $STARTED in
+    true)
+      echo "$NAME is running (PID $PID)" ;;
+    *)
+      echo "$NAME is not running" ;;
+  esac
+}
+
+start_app() {
+  if [ $STARTED = true ] ; then
+     echo "$NAME is already running (PID $PID)"
+   else
+     EXTRA_ARGS=""
+     if [ -f $PWD/config/vm.args ] ; then
+       EXTRA=$(cat $PWD/config/vm.args | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
+       EXTRA_ARGS=$(eval echo $EXTRA)
+     fi
+     erl $EXTRA_ARGS -pa $PWD/ebin $PWD/apps/*/ebin $PWD/deps/*/ebin $NOSHELL -config $PWD/config/$NAME.config $MNESIA -s $NAME
+   fi
+}
+
+get_pid() {
+  if [ $DAEMON = true ] ; then
+    PID=`ps aux | grep -v grep | grep $NAME | grep beam | awk '{print $2}'`
+    echo $PID > $PIDFILE
+  fi
+}
+
+stop_app() {
+  if [ $STARTED = true ] ; then
+    kill -9 $PID 2>/dev/null
+    rm -f $PIDFILE
+  else
+    echo "$NAME is not started"
+  fi
+}
+
+get_db_path() {
+  config_file_array='config_file_'
+  config_file_1="/etc/emedia.conf" 
+  config_file_2="/Library/Application Support/eMedia/emedia.conf" 
+  config_file_3="~/Library/Application Support/eMedia/emedia.conf" 
+  config_file_4="~/.emedia/emedia.conf" 
+  config_file_5="emedia.conf"
+
+  for i in $(seq 1 5); do
+    the_content=$(echo $(eval echo \$$config_file_array${i}) | sed -e "s|^~|$HOME|")
+
+    if [ -f "$the_content" ] ; then
+      db_path=$(awk -F "=" '/^[ \t]*db_path/ {print $2}' "$the_content" | sed -e 's/#.*$//' | sed -e 's/^[ \t]*//' | sed -e 's/[ \t]*$//' | tail -1 | sed -e "s|^~|$HOME|")
+      [ -d "$db_path" ] && DB_PATH=$(echo $db_path)
+    fi
+  done
+}
+
+get_db_path
+if [ "$DB_PATH" = "" ] ; then
+  DB_PATH=$(pwd)
+fi
+DB_FILE=$(echo "$DB_PATH/eMedia.mnesia")
+MNESIA="-mnesia dir '$DB_FILE'"
+
+while [ $# -ne 0 ] ; do
+  case $1 in
+    console) 
+      NOSHELL="" ; DAEMON=false ; ACTION="console" ;;
+    start)
+      ACTION="start" ;;
+    stop)
+      ACTION="stop" ;;
+    status)
+      ACTION="status" ;;
+    -d|--development) 
+      export PARIS_RUN_MODE="development" ;;
+    -p|--production) 
+      export PARIS_RUN_MODE="production" ;;
+    -C|--compile) 
+      COMPILE=true ;;
+    -K|--clean) 
+      CLEAN=true ; COMPILE=true ;;
+    -h|--help)
+      help ; exit 0 ;;
+    *)
+      help "Invalid option $1" ; exit 1 ;;  
+  esac
+  shift
+done
+
+if [ $CLEAN = true ] ; then
+  ./rebar clean
+fi
+if [ $COMPILE = true ] ; then
+  ./rebar compile
+fi
+
+case $ACTION in
+  stop)
+    stop_app ;;
+  start)
+    start_app ; get_pid ;;
+  console)
+    start_app ;;
+  status)
+    print_status ;;
+  *)
+    help ;;
+esac
+

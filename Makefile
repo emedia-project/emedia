@@ -1,16 +1,16 @@
-REBAR=$(shell which rebar || echo ./rebar)
+APPS  = apps
+REBAR = $(shell which rebar || echo ./rebar)
+
+.PHONY: compile rel get-deps 
 
 all: compile
-
-get-deps:
-	@$(REBAR) get-deps
-	@$(REBAR) check-deps
 
 compile: get-deps
 	@$(REBAR) compile
 
-tests: compile
-	@$(REBAR) eunit skip_deps=true
+get-deps:
+	@$(REBAR) get-deps
+	@$(REBAR) check-deps
 
 clean:
 	@$(REBAR) clean
@@ -19,16 +19,25 @@ clean:
 realclean: clean
 	@$(REBAR) delete-deps
 
-gen-doc: clean-doc
+test:
+	@$(REBAR) skip_deps=true eunit
+
+doc:
 	@mkdir doc
 	@cp _doc/* doc
-	@$(REBAR) doc skip_deps=true
+	$(REBAR) skip_deps=true doc
+	for app in $(APPS); do \
+		cp -R apps/$${app}/doc doc/$${app}; \
+	done;
 
-clean-doc: doc
-	@rm -rf doc
+dev:
+	@erl -pa ebin include apps/*/ebin apps/*/include deps/*/ebin deps/*/include -config config/emedia.config
 
-run: get-deps compile
-	erl -pa deps/*/ebin -pa ./ebin -mnesia dir '"eMediaTest.mnesia"'
+analyze: checkplt
+	@$(REBAR) skip_deps=true dialyze
 
-dev: compile
-	@erl -pa ebin include deps/*/ebin deps/*/include apps/*/ebin apps/*/include 
+buildplt:
+	@$(REBAR) skip_deps=true build-plt
+
+checkplt: buildplt
+	@$(REBAR) skip_deps=true check-plt
