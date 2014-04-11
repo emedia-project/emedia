@@ -10,11 +10,14 @@ A simple UPNP mediaserver
 
 > eMedia depend on ffmpeg and ffprobe (which is part of ffmpeg). For more informations about `ffmpeg` and how to install it, see [http://www.ffmpeg.org](http://www.ffmpeg.org).
 
-    git clone https://github.com/glejeune/emedia.git
-    cd emedia
-    ./start.sh --compile
+```
+git clone https://github.com/glejeune/emedia.git
+cd emedia
+make
+./emedia start
+```
 
-See `./start.sh --help` for more options.
+See `./emedia --help` for more options.
 
 ## Configuration
 
