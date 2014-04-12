@@ -2,7 +2,7 @@
 
 -export([all/1]).
 
--include("../../../eme_db/include/eme_db.hrl").
+-include("../../../eme_media/include/eme_db.hrl").
 -include("../include/soap_messages.hrl").
 
 -define(record_to_tuplelist(Rec, Ref), lists:zip(record_info(fields, Rec),tl(tuple_to_list(Ref)))).

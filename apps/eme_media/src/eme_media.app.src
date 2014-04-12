@@ -1,9 +1,9 @@
-{application, eme_db,
+{application, eme_media,
  [
-  {description, "eBill configuration"},
+  {description, "eMedia media"},
   {vsn, "1.0.0"},
-  {modules, [eme_db_app, eme_db_sup, eme_db]},
-  {registered, [eme_db]},
+  {modules, [eme_media_app, eme_media_sup, eme_media]},
+  {registered, [eme_media]},
   {applications, [
                   kernel,
                   stdlib,
@@ -11,6 +11,6 @@
                   mimetypes,
                   eme_config
                  ]},
-  {mod, { eme_db_app, []}},
+  {mod, { eme_media_app, []}},
   {env, []}
  ]}.

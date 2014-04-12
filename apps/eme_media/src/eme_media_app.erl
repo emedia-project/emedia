@@ -1,4 +1,4 @@
--module(eme_db_app).
+-module(eme_media_app).
 
 -behaviour(application).
 
@@ -10,7 +10,7 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    eme_db_sup:start_link().
+    eme_media_sup:start_link().
 
 stop(_State) ->
     ok.
