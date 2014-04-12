@@ -34,6 +34,7 @@
 ]).
 
 start_link() ->
+  application:set_env(mnesia, dir, eme_config:get(db_path)),
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 add_item(Title, Class) ->
