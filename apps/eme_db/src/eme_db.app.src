@@ -1,0 +1,14 @@
+{application, eme_db,
+ [
+  {description, "eMedia database"},
+  {vsn, "1.0.0"},
+  {registered, [eme_db]},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  lager,
+                  eme_config
+                 ]},
+  {mod, { eme_db_app, []}},
+  {env, []}
+ ]}.

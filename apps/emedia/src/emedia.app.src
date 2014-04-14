@@ -7,7 +7,9 @@
     stdlib,
     crypto,
     lager,
-    cowboy
+    cowboy,
+    eme_config,
+    eme_db
   ]},
   {mod, { paris_app, [emedia]}},
   {env, []}

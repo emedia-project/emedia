@@ -18,17 +18,15 @@ start_link() ->
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 %% @doc Access a configuration information
--spec(get/1 :: (hostname | uuid | tcp_ip | tcp_port | max_conn | services | ffprobe_path | scan_interval) -> any()).
+-spec(get/1 :: (hostname | uuid | ip | port | services | ffprobe_path | scan_interval | db_path | lang) -> any()).
 get(hostname) ->
   gen_server:call(?MODULE, {get_hostname});
 get(uuid) ->
   gen_server:call(?MODULE, {get_uuid});
-get(tcp_ip) ->
-  gen_server:call(?MODULE, {get_tcp_ip});
-get(tcp_port) ->
-  gen_server:call(?MODULE, {get_tcp_port});
-get(max_conn) ->
-  gen_server:call(?MODULE, {get_max_conn});
+get(ip) ->
+  gen_server:call(?MODULE, {get_ip});
+get(port) ->
+  gen_server:call(?MODULE, {get_port});
 get(services) ->
   gen_server:call(?MODULE, {get_services});
 get(ffprobe_path) ->
@@ -38,8 +36,10 @@ get(ffmpeg_path) ->
 get(scan_interval) ->
   gen_server:call(?MODULE, {get_scan_interval});
 get(db_path) ->
-  gen_server:call(?MODULE, {get_db_path}).
--spec(get/2 :: (medias, string()) -> [string()]).
+  gen_server:call(?MODULE, {get_db_path});
+get(lang) ->
+  gen_server:call(?MODULE, {get_lang}).
+-spec(get/2 :: (medias, atom() | [atom()]) -> [string()]).
 %% @doc Access a configuration information
 get(medias, Type) ->
   gen_server:call(?MODULE, {get_medias, Type}).
@@ -73,15 +73,12 @@ handle_call({get_hostname}, _From, Config) ->
 handle_call({get_uuid}, _From, Config) ->
   #emeconfig{uuid = UUID} = Config,
   {reply, UUID, Config};
-handle_call({get_tcp_ip}, _From, Config) ->
-  #emeconfig{tcp_ip = TcpIP} = Config,
+handle_call({get_ip}, _From, Config) ->
+  #emeconfig{ip = TcpIP} = Config,
   {reply, TcpIP, Config};
-handle_call({get_tcp_port}, _From, Config) ->
-  #emeconfig{tcp_port = TcpPort} = Config,
+handle_call({get_port}, _From, Config) ->
+  #emeconfig{port = TcpPort} = Config,
   {reply, TcpPort, Config};
-handle_call({get_max_conn}, _From, Config) ->
-  #emeconfig{max_conn = MaxConn} = Config,
-  {reply, MaxConn, Config};
 handle_call({get_services}, _From, Config) ->
   #emeconfig{services = Services} = Config,
   {reply, Services, Config};
@@ -97,6 +94,9 @@ handle_call({get_scan_interval}, _From, Config) ->
 handle_call({get_db_path}, _From, Config) ->
   #emeconfig{db_path = DBPath} = Config,
   {reply, DBPath, Config};
+handle_call({get_lang}, _From, Config) ->
+  #emeconfig{lang = Lang} = Config,
+  {reply, Lang, Config};
 handle_call({get_medias, Type}, _From, Config) ->
   #emeconfig{medias = Medias} = Config,
   {reply, get_medias_type(Medias, Type), Config};
@@ -105,18 +105,22 @@ handle_call(_Message, _From, Config) ->
 
 % private
 
-get_medias_type(Medias, Type) ->
-  {_, MediaList} = lists:foldl(fun(Media, {Type1, Acc}) ->
-      case re:split(Media, "\s*,\s*", [{return, list}]) of
-        [Type1|Path] ->
-          Path1 = string:join(Path, ","),
-          Path2 = eme_utils:expand_path(Path1),
-          {Type1, Acc ++ [Path2]};
-        _ ->
-          {Type1, Acc}
-      end
-    end, {Type, []}, Medias),
-  MediaList.
+get_medias_type(Medias, Types) when is_list(Types) ->
+  lists:foldl(fun(Type, Acc) ->
+        Acc ++ get_medias_type(Medias, Type)
+    end, [], Types);
+get_medias_type(Medias, Type) when is_atom(Type) ->
+  lists:foldl(fun({MType, Path}, Acc) ->
+        case MType of
+          Type -> 
+            Dir = case ucp:detect(Path) of
+              utf8 -> ucp:from_utf8(Path);
+              _ -> Path
+            end,
+            Acc ++ [eme_utils:expand_path(Dir)];
+          _ -> Acc
+        end
+    end, [], Medias).
 
 read_config() ->
   lager:info("Check configuration"),
@@ -135,20 +139,20 @@ read_config() ->
   #emeconfig{
     hostname = Hostname,
     uuid = uuid:generate(),
-    tcp_ip = IP,
-    tcp_port = get_value(port, ?EMEDIASERVER_TCP_PORT),
-    max_conn = get_value(max_conn, ?EMEDIASERVER_MAX_CONN),
-    services = ?EMEDIASERVER_SERVICES,
+    ip = IP,
+    port = get_value(port, ?EMEDIASERVER_TCP_PORT),
+    services = get_value(services, ?EMEDIASERVER_SERVICES),
     medias = get_value(medias, []),
     scan_interval = ScanInterval,
     tmdb_api_key = get_value(tmdb_api_key, false),
     ffprobe_path = eme_utils:expand_path(get_value(ffprobe_path, "ffprobe")),
     ffmpeg_path = eme_utils:expand_path(get_value(ffmpeg_path, "ffmpeg")),
-    db_path = eme_utils:expand_path(get_value(db_path, "."))
+    db_path = eme_utils:expand_path(get_value(db_path, ".")),
+    lang = get_value(lang, en)
   }.
 
 get_value(Key, Default) ->
-  case application:get_env(emedia, Key) of
+  case application:get_env(eme_config, Key) of
     {ok, Value} -> Value;
     _ -> Default
   end.

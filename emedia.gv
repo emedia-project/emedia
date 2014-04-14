@@ -1,13 +1,15 @@
 digraph emedia {
   node[shape=box];
 
+  emedia_config[label="\nemedia.config\n ",shape=note];
+
   subgraph cluster_2 {
     node[color=white,style=filled];
     eme_config -> eme_db[dir=back];
-    eme_db -> eme_scanner[dir=back];
-    eme_config -> eme_scanner[dir=back];
-    eme_server -> eme_ssdp[arrowhead=none];
-    eme_config -> eme_server[dir=back];
+    eme_db -> eme_media[dir=back];
+    eme_config -> eme_media[dir=back];
+    emedia -> eme_ssdp[arrowhead=none];
+    eme_config -> emedia[dir=back];
     eme_config -> eme_ssdp[dir=back];
     label = "eMedia";
     color=grey;
@@ -17,11 +19,10 @@ digraph emedia {
     http[label="HTTP\nclient",shape=invhouse];
     ssdp[label="UPNP\nclient", shape=invhouse];
 
-  emedia_conf[label="\nemedia.conf\n ",shape=note];
   filesystem[shape=folder,label="\nfilesystem\n "];
-  eme_config -> emedia_conf;
-  http -> eme_server[dir=both];
-  ssdp -> eme_server[dir=both];
-  ssdp -> eme_ssdp[dir=both];
-  eme_scanner -> filesystem[arrowhead=dot];
+  eme_config -> emedia_config;
+  emedia -> emedia_config;
+  http -> emedia[dir=both, style=dashed];
+  ssdp -> eme_ssdp[dir=both, style=dashed];
+  eme_media -> filesystem[arrowhead=dot];
 }

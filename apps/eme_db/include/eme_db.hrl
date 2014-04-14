@@ -2,7 +2,8 @@
     id,
     title,
     class = "object.container",
-    type = "container"
+    type = "container",
+    update_id = 0
   }).
 
 -record(emedia_item_item, {
@@ -22,6 +23,7 @@
     start_time,
     duration,
     size,
+    mtime,
     width,
     height,
     last_scan

@@ -87,9 +87,9 @@ root_device() ->
   #rootdevice{
     uuid = eme_config:get(uuid),
     os = ?UPNP,
-    ip = eme_config:get(tcp_ip),
+    ip = eme_config:get(ip),
     hostname = eme_config:get(hostname),
-    port = eme_config:get(tcp_port),
+    port = eme_config:get(port),
     services = eme_config:get(services)
   }.
 

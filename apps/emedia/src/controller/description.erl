@@ -11,8 +11,8 @@ get(_Request) ->
     description,
     [
       {url_base, "http://" ++ 
-       eme_config:get(tcp_ip) ++ 
-       ":" ++ integer_to_list(eme_config:get(tcp_port))},
+       eme_config:get(ip) ++ 
+       ":" ++ integer_to_list(eme_config:get(port))},
       {hostname, eme_config:get(hostname)},
       {udn, binary_to_list(eme_config:get(uuid))},
       {version, Version}

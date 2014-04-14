@@ -9,7 +9,7 @@
                   stdlib,
                   lager,
                   mimetypes,
-                  eme_config
+                  eme_db
                  ]},
   {mod, { eme_media_app, []}},
   {env, []}

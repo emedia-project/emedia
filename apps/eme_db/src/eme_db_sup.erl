@@ -1,4 +1,5 @@
--module(eme_media_sup).
+-module(eme_db_sup).
+
 -behaviour(supervisor).
 
 %% API
@@ -22,8 +23,5 @@ start_link() ->
 %% ===================================================================
 
 init([]) ->
-    {ok, {{one_for_one, 5, 10}, [
-        ?CHILD(file_monitor, worker),
-        ?CHILD(eme_media, worker)
-    ]} }.
+    {ok, { {one_for_one, 5, 10}, [?CHILD(eme_db, worker)]} }.
 

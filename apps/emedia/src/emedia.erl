@@ -8,7 +8,8 @@ start() ->
   ok = application:start(mimetypes),
   ok = application:start(ffmpeg),
   emdb:start(),
-  ok = application:start(emedia),
   ok = application:start(eme_config),
+  ok = application:start(eme_db),
   ok = application:start(eme_media),
+  ok = application:start(emedia),
   ok = application:start(eme_ssdp).

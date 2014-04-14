@@ -14,8 +14,8 @@
   terminate/2, 
   code_change/3,
   
-  add_item/2,
   add_item/3,
+  add_item/4,
 
   search_item_by_id/1,
   get_item_childs/1,
@@ -37,11 +37,11 @@ start_link() ->
   application:set_env(mnesia, dir, eme_config:get(db_path)),
   gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-add_item(Title, Class) ->
-  add_item(binary_to_list(uuid:generate()), Title, Class).
+add_item(Title, Class, UpdateID) ->
+  add_item(binary_to_list(uuid:generate()), Title, Class, UpdateID).
 
-add_item(ID, Title, Class) ->
-  gen_server:call(?MODULE, {add_item, ID, Title, Class}).
+add_item(ID, Title, Class, UpdateID) ->
+  gen_server:call(?MODULE, {add_item, ID, Title, Class, UpdateID}).
 
 search_item_by_id(ID) ->
   gen_server:call(?MODULE, {search_item_by_id, ID}).
@@ -92,13 +92,14 @@ init(Nodes) ->
   end,
   case Create of
     created ->
+      UpdateID = 0,
       lager:debug("insert initial items"),
-      do_add_item("0", "eMedia Server", "object.container"),
-      do_add_item("V", "Videos", "object.container"),
+      do_add_item("0", "eMedia Server", "object.container", UpdateID),
+      do_add_item("V", "Videos", "object.container", UpdateID),
       do_add_items_link_by_ids("0", "V"),
-      do_add_item("A", "Music", "object.container"),
+      do_add_item("A", "Music", "object.container", UpdateID),
       do_add_items_link_by_ids("0", "A"),
-      do_add_item("P", "Photos", "object.container"),
+      do_add_item("P", "Photos", "object.container", UpdateID),
       do_add_items_link_by_ids("0", "P"),
       {ok, db};
     _ -> {ok, db}
@@ -121,8 +122,8 @@ code_change(_OldVersion, Config, _Extra) ->
   {ok, Config}.
 
 %% @hidden
-handle_call({add_item, ID, Title, Class}, _From, Config) ->
-  {reply, do_add_item(ID, Title, Class), Config};
+handle_call({add_item, ID, Title, Class, UpdateID}, _From, Config) ->
+  {reply, do_add_item(ID, Title, Class, UpdateID), Config};
 handle_call({search_item_by_id, ID}, _From, Config) ->
   {reply, do_search_item_by_id(ID), Config};
 handle_call({get_item_childs_by_id, ItemID}, _From, Config) ->
@@ -179,13 +180,14 @@ do_insert(Data) ->
   F = fun() -> mnesia:write(Data) end,
   mnesia:transaction(F).
 
-do_add_item(ID, Title, Class) ->
+do_add_item(ID, Title, Class, UpdateID) ->
   [_, Type|_] = string:tokens(Class, "."),
   Item = #emedia_item{
     id = ID,
     title = Title, 
     class = Class,
-    type = Type
+    type = Type,
+    update_id = UpdateID
   },
   do_insert(Item),
   Item.

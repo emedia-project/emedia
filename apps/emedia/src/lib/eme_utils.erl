@@ -35,7 +35,9 @@ bin_to_num(Bin) ->
 get_date() ->
   httpd_util:rfc1123_date(erlang:localtime()).
 
-expand_path(Path) ->
+expand_path(Path) when is_binary(Path) ->
+  expand_path(binary_to_list(Path));
+expand_path(Path) when is_list(Path) ->
   normalize_path(filename:absname(expand_home(Path))).
 
 normalize_path(Path) ->

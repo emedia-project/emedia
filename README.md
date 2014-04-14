@@ -29,14 +29,13 @@ A configuration accept the following parameters :
 
 * `tcp_ip` : IP binding
 * `tcp_port` : port used by the server
-* `max_conn` : maximum connections accepted by the server
-* `medias` : path to the differents media directories. This option must be repeated for every directory. The value is a path preceded by the type of media found in the directory (`A` for Audio, `V` for Video and `P` for Photo). Example :
+* `medias` : path to the differents media directories. This option must be repeated for every directory. The value is a path preceded by the type of media found in the directory (`audio`, `video` and `photo`). Example :
 
-        A,/my/audio/directory
-        V,/my/video/directory
-        P,/my/photos
-        V,/to/classify
-        A,/to/classify
+        {audio, "/my/audio/directory"}
+        {video, "/my/video/directory"}
+        {photo, "/my/photos"}
+        {video, "/to/classify"}
+        {audio, "/to/classify}
 
     In this example, the `/to/classify` directory is given two times, once to specify that it contains videos and a second time for audio.
     
@@ -45,21 +44,14 @@ A configuration accept the following parameters :
 * `ffprobe_path` : Path to `ffprobe`
 * `ffmpeg_path` : Path to `ffmpeg`
 * `db_path` : Path to the eMedia database
+* `lang` : Language used to retrieve media informations
 
 Example :
 
 ```erlang
-{emedia, [
+{eme_config, [
   {port, 9090}, 
   {ip, "0.0.0.0"},
-  {max_conn, 100},
-  {routes, [
-    {"/description", description},
-    {"/service/content_directory", service_content_directory},
-    {"/service/content_directory/control", service_content_directory_control},
-    {"/service/connection_manager", service_connection_manager},
-    {"/media", media}
-  ]},
   {medias, [
     "V,/home/user/videos",
     "V,/usr/share/videos",
@@ -71,17 +63,11 @@ Example :
   {ffprobe_path, "/usr/local/bin/ffprobe"},
   {ffmpeg_path, "/usr/local/bin/ffmpeg"},
   {db_path, "~/.emedia"}
-]},
-{mimetypes, [
-  {load_async, true},
-  {load_timeout, 10000},
-  {load, [
-    {default, [
-      {<<"mkv">>, <<"video/x-matroska">>}
-    ]}
-  ]}
+  {lang, fr}
 ]}
 ```
+
+> The configuration file contains many other parameters, do not change those parameters unless you really know what you are doing.
 
 ## Architecture
 
@@ -89,15 +75,17 @@ Example :
 
 ## Plan
 
-* Rewrite `eme_db`
-* Add "update" to the media scanner (allowing to detect changes in the media database)
+* <span style="text-decoration: line-through">Rewrite server using [paris](https://github.com/emedia-project/paris)</span> : **DONE**
+* <span style="text-decoration: line-through">Rewrite `start.sh`</span> : **DONE**
+* <span style="text-decoration: line-through">Rewrite scanner</span> : **DONE**
+* Rewrite `eme_db` : **WIP**
+* Add "update" to the media scanner (allowing to detect changes in the media database) : **WIP**
+* Better media infos (using erlFFMpeg + emdbd) -> new media's classifications : **WIP**
+* Refactor SOAP support : **WIP**
 * Support additional ressources
 * Add a web interface
-* Better media infos (using erlFFMpeg + emdbd) -> new media's classifications
 * Use erlFFMpeg for media conversion
-* Refactor SOAP support
 * Rewrite `eme_ssdp`
-* Rewrite `start.sh`
 * Add DAAP support
 
 ## Licence
