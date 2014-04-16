@@ -9,8 +9,11 @@ digraph emedia {
     eme_db -> eme_media[dir=back];
     eme_config -> eme_media[dir=back];
     emedia -> eme_ssdp[arrowhead=none];
+    emedia -> eme_db;
     eme_config -> emedia[dir=back];
     eme_config -> eme_ssdp[dir=back];
+    eme_explorer -> eme_db;
+    eme_explorer -> eme_config;
     label = "eMedia";
     color=grey;
     style=filled;
