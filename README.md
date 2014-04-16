@@ -38,7 +38,7 @@ A configuration accept the following parameters :
         {video, "/my/video/directory"}
         {photo, "/my/photos"}
         {video, "/to/classify"}
-        {audio, "/to/classify}
+        {audio, "/to/classify"}
 
     In this example, the `/to/classify` directory is given two times, once to specify that it contains videos and a second time for audio.
     
@@ -60,7 +60,7 @@ Example :
     {video, "/my/video/directory"},
     {photo, "/my/photos"},
     {video, "/to/classify"},
-    {audio, "/to/classify}
+    {audio, "/to/classify"}
   ]},
   {scan_interval, 60},
   {tmdb_api_key, "mY4p1k3y"},
