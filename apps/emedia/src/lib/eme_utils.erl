@@ -155,3 +155,4 @@ subst(Str,_Old,_New, Str) -> Str;
 subst(Acc, Old, New,_Str) ->
   Acc1 = sub(Acc,Old,New),
   subst(Acc1,Old,New,Acc).
+

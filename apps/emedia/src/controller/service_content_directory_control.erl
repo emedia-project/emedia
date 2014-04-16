@@ -30,7 +30,7 @@ all(Request) ->
           [{entries, []}, {number_returned, 0}, {total_matches, 0}, {update_id, Sec*MSec}];
         N -> 
           [{entries, 
-              [?record_to_tuplelist(emedia_item, X) ++ [
+              [?record_to_tuplelist(emedia_item, xmlify(X)) ++ [
                   {child_count, eme_db:count_item_childs(X)}, 
                   {parent_id, ObjectID}
                   ] ++ get_media_item(X)
@@ -64,3 +64,10 @@ get_media_item(Item) ->
     X when X =:= undefined; X =:= error -> [];
     M -> [{media, ?record_to_tuplelist(emedia_media, M)}]
   end.
+
+xmlify(Item = #emedia_item{title = Title}) ->
+  TitleUTF8 = case ucp:detect(Title) of
+    ucp -> ucp:to_utf8(Title);
+    _ -> Title
+  end,
+  Item#emedia_item{title = xmerl_lib:export_text(TitleUTF8)}.

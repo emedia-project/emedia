@@ -1,0 +1,15 @@
+{application, emedia_explorer, [
+  {description, "eMedia Explorer"},
+  {vsn, "1.0.0"},
+  {registered, []},
+  {applications, [
+    kernel,
+    stdlib,
+    crypto,
+    lager,
+    eme_config,
+    eme_db
+  ]},
+  {mod, {emedia_explorer_app, []}},
+  {env, []}
+]}.

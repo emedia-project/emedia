@@ -23,6 +23,11 @@ COMPILE=false
 CLEAN=false
 ACTION=""
 
+# Extra
+START_OBSERVER="false"
+START_SERVER="true"
+START_SSDP="true"
+
 help() {
   MESSAGE=$1
   if [ "x$MESSAGE" != "x" ] ; then
@@ -36,6 +41,9 @@ help() {
   echo "  -C --compile     : Compile code before run"
   echo "  -K --clean       : Clean and compile code before run"
   echo "  -h --help        : Display this message"
+  echo "     --no-ssdp     : Do not start the SSDP server"
+  echo "     --no-server   : Do not start the server"
+  echo "     --observer    : Start observer"
 }
 
 print_status() {
@@ -56,7 +64,7 @@ start_app() {
        EXTRA=$(cat $PWD/config/vm.args | grep -v "^\s*#" | sed -e 's/#.*//' | xargs)
        EXTRA_ARGS=$(eval echo $EXTRA)
      fi
-     erl $EXTRA_ARGS -pa $PWD/ebin $PWD/apps/*/ebin $PWD/deps/*/ebin $NOSHELL -config $PWD/config/$NAME.config -s $NAME
+     erl $EXTRA_ARGS -pa $PWD/ebin $PWD/apps/*/ebin $PWD/deps/*/ebin $NOSHELL -config $PWD/config/$NAME.config -s $NAME start $START_SSDP $START_SERVER $START_OBSERVER
    fi
 }
 
@@ -94,6 +102,12 @@ while [ $# -ne 0 ] ; do
       COMPILE=true ;;
     -K|--clean) 
       CLEAN=true ; COMPILE=true ;;
+    --no-ssdp)
+      START_SSDP="false" ;;
+    --no-server)
+      START_SERVER="false" ;;
+    --observer)
+      START_OBSERVER="true" ;;
     -h|--help)
       help ; exit 0 ;;
     *)

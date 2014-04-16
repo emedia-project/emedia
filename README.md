@@ -19,6 +19,9 @@ make
 
 See `./emedia --help` for more options.
 
+> This new version comes with `emedia_explorer`. It's a very simple application, allowing you to explore the content of you media tree. This application is _experimental_. To use it, you need an Erlang version with `wxWidget`, launch `emedia` in console mode, then in the shell, execute `application:start(emedia_explorer).`.
+> ![](explorer.png)
+
 ## Configuration
 
 The configuration is store in the `config/emedia.config` file.
