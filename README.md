@@ -56,10 +56,11 @@ Example :
   {port, 9090}, 
   {ip, "0.0.0.0"},
   {medias, [
-    "V,/home/user/videos",
-    "V,/usr/share/videos",
-    "P,/home/user/Photos",
-    "A,/home/user/music"
+    {audio, "/my/audio/directory"},
+    {video, "/my/video/directory"},
+    {photo, "/my/photos"},
+    {video, "/to/classify"},
+    {audio, "/to/classify}
   ]},
   {scan_interval, 60},
   {tmdb_api_key, "mY4p1k3y"},
