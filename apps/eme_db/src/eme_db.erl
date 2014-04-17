@@ -4,6 +4,7 @@
 
 -include("../include/eme_db.hrl").
 -include_lib("stdlib/include/qlc.hrl").
+-define(STRUCTURE_IDS, ["0", "V", "A", "P"]).
 
 -export([
   start_link/0,
@@ -29,6 +30,9 @@
   media_exist/1,
   get_media_for_item/1,
   item_has_media/1,
+  search_media_by_path/1,
+  delete_media/1,
+  delete_media/2,
 
   insert/1
 ]).
@@ -74,6 +78,15 @@ get_media_for_item(#emedia_item{id = ItemID}) ->
 
 item_has_media(#emedia_item{id = ItemID}) ->
   gen_server:call(?MODULE, {item_has_media, ItemID}).
+
+search_media_by_path(Path) ->
+  gen_server:call(?MODULE, {search_media_by_path, Path}).
+
+delete_media(Media) when is_record(Media, emedia_media) ->
+  delete_media(Media, false).
+
+delete_media(Media, Recursive) when is_record(Media, emedia_media), is_boolean(Recursive) ->
+  gen_server:call(?MODULE, {delete_media, Media, Recursive}).
 
 insert(Data) ->
   gen_server:call(?MODULE, {insert, Data}).
@@ -134,11 +147,11 @@ handle_call({get_item_childs_by_id, ItemID}, _From, Config) ->
         Acc ++ [do_search_item_by_id(ID)]
     end, [], Childs),
   {reply, Result, Config};
-handle_call({count_item_childs, #emedia_item{id = ItemID}}, _From, Config) ->
-  Result = length(do(qlc:q([X || X <- mnesia:table(emedia_item_item),
-        X#emedia_item_item.parent_id =:= ItemID
-      ]))),
-  {reply, Result, Config};
+% handle_call({count_item_childs, #emedia_item{id = ItemID}}, _From, Config) ->
+%   Result = length(do(qlc:q([X || X <- mnesia:table(emedia_item_item),
+%         X#emedia_item_item.parent_id =:= ItemID
+%       ]))),
+%   {reply, Result, Config};
 handle_call({add_items_link_by_ids, ParentItemID, ChildItemID}, _From, Config) ->
   {reply, do_add_items_link_by_ids(ParentItemID, ChildItemID), Config};
 handle_call({search_media_by_id, ID}, _From, Config) ->
@@ -157,6 +170,17 @@ handle_call({item_has_media, ItemID}, _From, Config) ->
     X when X =:= undefined; X =:= error -> {reply, false, Config};
     _ -> {reply, true, Config}
   end;
+handle_call({search_media_by_path, Path}, _From, Config) ->
+  M = #emedia_media{fullpath = Path, _ = '_'},
+  F = fun() -> 
+      mnesia:select(emedia_media, [{M, [], ['$_']}])
+  end,
+  case mnesia:activity(transaction, F) of
+    [Result|_] -> {reply, Result, Config};
+    _ -> {reply, not_found, Config}
+  end;
+handle_call({delete_media, Media, Recursive}, _From, Config) ->
+  {reply, do_delete_media(Media, Recursive), Config};
 handle_call({insert, Data}, _From, Config) ->
   {reply, do_insert(Data), Config};
 handle_call(_Message, _From, Config) ->
@@ -214,6 +238,41 @@ do_search_media_by_id(ID) ->
   uniq(do(qlc:q([X || X <- mnesia:table(emedia_media),
         X#emedia_media.id =:= ID
       ]))).
+
+do_delete_media(Media = #emedia_media{item_id = ItemID}, Recursive) ->
+  mnesia:transaction(fun() ->
+      mnesia:delete_object(Media)
+    end),
+  Item = do_search_item_by_id(ItemID),
+  do_delete_item(Item, Recursive).
+
+do_delete_item(Item = #emedia_item{id = ID}, Recursive) ->
+  case elists:include(?STRUCTURE_IDS, ID) of
+    true -> ok;
+    false ->
+      lists:foreach(fun(Link = #emedia_item_item{parent_id = ParentID}) ->
+            ParentItem = do_search_item_by_id(ParentID),
+            NbChilds = count_item_childs(ParentItem),
+            if
+              NbChilds =< 1 andalso Recursive =:= true ->
+                do_delete_item(ParentItem, Recursive);
+              true -> 
+                stop
+            end,
+            mnesia:transaction(fun() ->
+                  mnesia:delete_object(Link)
+              end)
+        end, get_item_links(Item)),
+      mnesia:transaction(fun() ->
+            mnesia:delete_object(Item)
+        end)
+  end.
+
+get_item_links(#emedia_item{id = ItemID}) ->
+  do(qlc:q([X || X <- mnesia:table(emedia_item_item),
+        X#emedia_item_item.child_id =:= ItemID
+      ])).
+
 
 create_schema(Nodes) ->
   Schema = mnesia:create_schema(Nodes),

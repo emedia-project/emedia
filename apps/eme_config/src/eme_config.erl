@@ -117,7 +117,7 @@ get_medias_type(Medias, Type) when is_atom(Type) ->
               utf8 -> ucp:from_utf8(Path);
               _ -> Path
             end,
-            Acc ++ [eme_utils:expand_path(Dir)];
+            Acc ++ [efile:expand_path(Dir)];
           _ -> Acc
         end
     end, [], Medias).
@@ -145,9 +145,9 @@ read_config() ->
     medias = get_value(medias, []),
     scan_interval = ScanInterval,
     tmdb_api_key = get_value(tmdb_api_key, false),
-    ffprobe_path = eme_utils:expand_path(get_value(ffprobe_path, "ffprobe")),
-    ffmpeg_path = eme_utils:expand_path(get_value(ffmpeg_path, "ffmpeg")),
-    db_path = eme_utils:expand_path(get_value(db_path, ".")),
+    ffprobe_path = efile:expand_path(get_value(ffprobe_path, "ffprobe")),
+    ffmpeg_path = efile:expand_path(get_value(ffmpeg_path, "ffmpeg")),
+    db_path = efile:expand_path(get_value(db_path, ".")),
     lang = get_value(lang, en)
   }.
 

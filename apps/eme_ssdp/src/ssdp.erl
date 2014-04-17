@@ -36,7 +36,7 @@ handle(udp, Socket, IP, InPortNo, Packet) ->
   end.
 
 is_msearch(Packet) ->
-  eme_utils:starts_with(Packet, ?M_SEARCH).
+  estring:start_with(Packet, ?M_SEARCH).
 
 handle_msearch(Socket, IP, InPortNo, Packet) ->
   case get_st(Packet) of
@@ -52,7 +52,7 @@ handle_msearch(Socket, IP, InPortNo, Packet) ->
 
 get_st(Message) ->
   lager:debug("[SSDP] get_st : Message = ~p", [Message]),
-  LST = [string:strip(string:sub_string(X, 4)) || X <- string:tokens(Message, "\r\n"), eme_utils:starts_with(X, "ST")],
+  LST = [string:strip(string:sub_string(X, 4)) || X <- string:tokens(Message, "\r\n"), estring:start_with(X, "ST")],
   case length(LST) of
     1 -> [ST] = LST, {service, ST};
     _ -> noservice

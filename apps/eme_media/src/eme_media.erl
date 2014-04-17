@@ -16,7 +16,7 @@ start_link() ->
 init(Args) ->
   file_monitor:set_interval(eme_config:get(scan_interval)),
   lists:foreach(fun(Path) ->
-        file_monitor:automonitor(eme_utils:expand_path(Path))
+        file_monitor:automonitor(efile:expand_path(Path))
     end, eme_config:get(medias, [video, audio, image])),
   {ok, Args}.
 
@@ -34,8 +34,8 @@ handle_info({file_monitor, _, {found, SFile, file, #file_info{size = FileSize, m
     {MimeType, Type, Root} -> 
       Filename = filename:basename(File),
       Filepath = [X || X <- filename:split(
-              eme_utils:sub(
-                eme_utils:sub(File, Root, ""), 
+              estring:sub(
+                estring:sub(File, Root, ""), 
                 Filename, ""
               )
             ), X =/= "/"],
@@ -61,8 +61,12 @@ handle_info({file_monitor, _, {found, SFile, file, #file_info{size = FileSize, m
 handle_info({file_monitor, _,{changed, File, file, FileInfo, _}}, State) ->
   lager:info("Update : ~p", [File]),
   {noreply, State};
-handle_info({file_monitor, _, {error, File, Type, enoent}}, State) ->
-  lager:info("Deleted : ~p", [File]),
+handle_info({file_monitor, _, {error, SFile, file, enoent}}, State) ->
+  File = binary_to_list(SFile),
+  case eme_db:search_media_by_path(File) of
+    not_found -> ok;
+    Media -> eme_db:delete_media(Media, true)
+  end,
   {noreply, State};
 handle_info(_Info, State) ->
   {noreply, State}.
