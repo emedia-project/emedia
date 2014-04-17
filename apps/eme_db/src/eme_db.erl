@@ -273,7 +273,6 @@ get_item_links(#emedia_item{id = ItemID}) ->
         X#emedia_item_item.child_id =:= ItemID
       ])).
 
-
 create_schema(Nodes) ->
   Schema = mnesia:create_schema(Nodes),
   mnesia:start(),

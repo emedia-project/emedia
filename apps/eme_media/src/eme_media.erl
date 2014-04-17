@@ -58,8 +58,24 @@ handle_info({file_monitor, _, {found, SFile, file, #file_info{size = FileSize, m
       add_file(Media, Filepath)
   end,
   {noreply, State};
-handle_info({file_monitor, _,{changed, File, file, FileInfo, _}}, State) ->
-  lager:info("Update : ~p", [File]),
+handle_info({file_monitor, _,{changed, SFile, file, #file_info{size = FileSize, mtime = MTime}, _}}, State) ->
+  File = binary_to_list(SFile),
+  case eme_db:search_media_by_path(File) of
+    not_found -> ok;
+    Media -> 
+      {ok, FileMD5} = eme_utils:hash_file(File), 
+      UpdateMedia = Media#emedia_media{
+             hash = FileMD5,
+             start_time = 0,
+             duration = 0,
+             size = FileSize,
+             mtime = MTime,
+             width = 0,
+             height = 0,
+             last_scan = eme_utils:timestamp()
+          },
+      eme_db:insert(UpdateMedia)
+  end,
   {noreply, State};
 handle_info({file_monitor, _, {error, SFile, file, enoent}}, State) ->
   File = binary_to_list(SFile),
